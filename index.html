@@ -286,9 +286,11 @@ function drawRoutes(){
     d.stops.some(s=>(s.display+' '+s.name).toLowerCase().includes(q))));
   $('#routes').innerHTML=list.length?list.map(r=>{
     const i=g.routes.indexOf(r),d=r.dirs[0],n=d.stops.length;
+    const destinations=[...new Set(r.dirs.map(x=>x.destination_display||x.destination||'').filter(Boolean))];
+    const directionText=destinations.length?destinations.map(x=>esc(x)+' 방면').join(' · '):r.dirs.map(x=>esc(x.trip)).join(' · ');
     return `<button class="rt" onclick="pickRoute(${i})"><span class="no" style="color:${routeColor(r)}">${esc(r.no)}</span>
     <span class="m"><small>방향 ${r.dirs.length}개 · 정류장 ${n}개</small>
-    <b>${esc(d.stops[0].display)} ↔ ${esc(d.stops[n-1].display)}</b><small>${esc(d.trip)}</small></span><span class="arrow">›</span></button>`}).join('')
+    <b>${esc(d.stops[0].display)} ↔ ${esc(d.stops[n-1].display)}</b><small>${directionText}</small></span><span class="arrow">›</span></button>`}).join('')
     :'<div class="empty">검색 결과가 없습니다</div>';
 }
 function pickRoute(i){st.live=false;st.rt=DATA[st.rg].routes[i];pickDir(0)}
