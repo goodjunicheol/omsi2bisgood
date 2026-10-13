@@ -1,0 +1,11 @@
+{
+  "_help": "route는 API에서 들어오는 원래 노선번호, trip은 분리할 때 구분할 원본 트립 식별자, displayed는 현재 화면에 표시되던 번호 기록, corrected는 새로 표시할 번호, single_route는 0=노선번호 전체 보정(모든 트립), 1=해당 트립만 별도 노선으로 분리",
+  "_example": {
+    "route": "502",
+    "trip": "01",
+    "displayed": "502",
+    "corrected": "509",
+    "single_route": 1
+  },
+  "corrections": []
+}
