@@ -273,21 +273,16 @@ function correctionTripMatches(dir,target){
   const candidates=[dir&&dir.trip,dir&&dir.trip_no,dir&&dir.trip_number,dir&&dir.trip_id,dir&&dir.id,dir&&dir.tour,dir&&dir.trip_label]
     .filter(v=>v!==null&&v!==undefined&&String(v).trim()!=='').map(normKey);
   if(candidates.some(v=>v===wanted))return true;
-  const escaped=wanted.replace(/[.*+?^${}()|[\]\\]/g,'\\/* ---------- HOF 노선 데이터 ---------- */
-async function loadRoutes(){
-  try{
-    const j=await jget('/api/routes',REMOTE?'no-cache':'no-store');
-    const keepRg=st.rg!==null&&DATA[st.rg]?DATA[st.rg].id:null,keepRt=st.rt?st.rt.id:null;
-    DATA=(j.hofs||[]).filter(h=>!h.error&&h.routes.length).map(h=>({id:h.id,name:h.name,
-      routes:h.routes.map(r=>({id:r.id,no:r.no,dirs:r.directions,color:r.color,color_set:r.color_set}))}));');
-  const re=new RegExp('(^|[^a-z0-9])'+escaped+'([^a-z0-9]|$)','i');
-  return candidates.some(v=>re.test(v));
+  const tokens=wanted.split(/[^a-z0-9]+/).filter(Boolean);
+  return candidates.some(v=>{
+    const parts=v.split(/[^a-z0-9]+/).filter(Boolean);
+    return tokens.length===1&&parts.includes(wanted)||v.includes(wanted);
+  });
 }
 function applyMapNameFixes(hofs){
-  const fixes=MAP_NAME_FIXES;
   for(const h of hofs||[])for(const r of h.routes||[])for(const d of r.directions||[])for(const stop of d.stops||[]){
     const candidates=[stop.name,stop.display,stop.ko,stop.resolved].map(normKey);
-    const fix=fixes.find(x=>{
+    const fix=MAP_NAME_FIXES.find(x=>{
       const from=normKey(x.actual??x.from??x.name);
       return from&&candidates.includes(from);
     });
@@ -306,9 +301,6 @@ function applyRouteNumberFixes(hofs){
       const sharedFix=routeFixes.find(x=>Number(x.single_route)===0&&String(x.corrected??'').trim());
       const base={...source,no:sharedFix?String(sharedFix.corrected).trim():originalNo,
         sourceRouteNo:originalNo,dirs:[...(source.directions||[])]};
-      if(sharedFix){
-        base.dirs=base.dirs.map(d=>d);
-      }
       const separateFixes=routeFixes.filter(x=>Number(x.single_route)===1&&String(x.corrected??'').trim()&&String(x.trip??'').trim());
       let remaining=[...base.dirs];
       for(const fix of separateFixes){
@@ -319,9 +311,7 @@ function applyRouteNumberFixes(hofs){
           no:String(fix.corrected).trim(),sourceRouteNo:originalNo,sourceTrip:String(fix.trip),
           singleRoute:true,dirs:matched});
       }
-      if(remaining.length){
-        result.push({...base,dirs:remaining});
-      }
+      if(remaining.length)result.push({...base,dirs:remaining});
     }
     h.routes=result;
   }
@@ -336,7 +326,9 @@ async function loadCorrections(){
   MAP_NAME_FIXES=Array.isArray(mapFile)?mapFile:(mapFile.corrections||[]);
   const colors=colorFile.colors&&typeof colorFile.colors==='object'?colorFile.colors:colorFile;
   ROUTE_COLORS={};
-  for(const [k,v] of Object.entries(colors||{}))if(k!=='default'&&k!=='_help'&&validColor(v))ROUTE_COLORS[String(k)]=v;
+  for(const [k,v] of Object.entries(colors||{})){
+    if(k!=='default'&&k!=='_help'&&k!=='colors'&&validColor(v))ROUTE_COLORS[String(k)]=v;
+  }
 }
 
 /* ---------- HOF 노선 데이터 ---------- */
@@ -347,7 +339,7 @@ async function loadRoutes(){
     applyMapNameFixes(j.hofs||[]);
     applyRouteNumberFixes(j.hofs||[]);
     const keepRg=st.rg!==null&&DATA[st.rg]?DATA[st.rg].id:null,keepRt=st.rt?st.rt.id:null;
-    DATA=(j.hofs||[]).filter(h=>!h.error&&h.routes.length).map(h=>({id:h.id,name:h.name,
+    DATA=(j.hofs||[]).filter(h=>!h.error&&h.routes&&h.routes.length).map(h=>({id:h.id,name:h.name,
       routes:h.routes.map(r=>({id:r.id,no:r.no,dirs:r.dirs,color:r.color,color_set:r.color_set,
         sourceRouteNo:r.sourceRouteNo,singleRoute:r.singleRoute,sourceTrip:r.sourceTrip}))}));
     st.rg=keepRg?DATA.findIndex(h=>h.id===keepRg):null;
