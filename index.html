@@ -203,11 +203,15 @@ function setApi(){
 const REMOTE=!!API||!/^(localhost$|127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|\[?::1)/.test(location.hostname);
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const PAL=[['#2b6fe0','#6a4de0'],['#1a9b4b','#14a5a0'],['#d6342c','#e0762c'],['#d98d00','#e0562c'],['#7a4fd1','#c04fa8'],['#0f8fb5','#2b6fe0'],['#c23a7b','#e0592c']];
-const hash=s=>{let h=2166136261;for(const c of String(s)){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0};
-const col=no=>PAL[hash(no)%PAL.length][0];
-/* route_colors.json 에 색이 적힌 노선은 그 색, 아니면 번호로 정한 기본 팔레트 */
-const routeColor=r=>r&&r.color_set&&r.color?r.color:col(r?r.no:'');
+const DEFAULT_ROUTE_COLOR='#2b6fe0';
+let ROUTE_COLORS={};
+/* route_colors.json에 지정된 색만 사용하고, 나머지는 모두 기본 파란색 */
+function validColor(c){return typeof c==='string'&&/^#[0-9a-f]{6}$/i.test(c)}
+const routeColor=r=>{
+  const no=String(r&&r.no!=null?r.no:'');
+  const c=ROUTE_COLORS[no];
+  return validColor(c)?c:DEFAULT_ROUTE_COLOR;
+};
 const rgbOf=c=>{const m=/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(c||'');return m?[parseInt(m[1],16),parseInt(m[2],16),parseInt(m[3],16)]:[43,111,224]};
 const rgba=(c,a)=>`rgba(${rgbOf(c).join(',')},${a})`;
 
@@ -252,13 +256,100 @@ function show(id,push=true){
 }
 function back(){if(stack.length>1){stack.pop();show(stack[stack.length-1],false)}}
 
-/* ---------- HOF 노선 데이터 ---------- */
+/* ---------- 보정 파일 ---------- */
+let ROUTE_NUMBER_FIXES=[],MAP_NAME_FIXES=[];
+async function readStaticJson(file,fallback){
+  try{
+    const u=new URL(file,document.baseURI);
+    const r=await fetch(u.href,{cache:'no-store'});
+    if(!r.ok)return fallback;
+    return await r.json();
+  }catch(e){return fallback}
+}
+function normKey(v){return String(v??'').trim().toLowerCase().replace(/\\s+/g,' ')}
+function correctionTripMatches(dir,target){
+  const wanted=normKey(target);
+  if(!wanted)return false;
+  const candidates=[dir&&dir.trip,dir&&dir.trip_no,dir&&dir.trip_number,dir&&dir.trip_id,dir&&dir.id,dir&&dir.tour,dir&&dir.trip_label]
+    .filter(v=>v!==null&&v!==undefined&&String(v).trim()!=='').map(normKey);
+  if(candidates.some(v=>v===wanted))return true;
+  const escaped=wanted.replace(/[.*+?^${}()|[\]\\]/g,'\\/* ---------- HOF 노선 데이터 ---------- */
 async function loadRoutes(){
   try{
     const j=await jget('/api/routes',REMOTE?'no-cache':'no-store');
     const keepRg=st.rg!==null&&DATA[st.rg]?DATA[st.rg].id:null,keepRt=st.rt?st.rt.id:null;
     DATA=(j.hofs||[]).filter(h=>!h.error&&h.routes.length).map(h=>({id:h.id,name:h.name,
-      routes:h.routes.map(r=>({id:r.id,no:r.no,dirs:r.directions,color:r.color,color_set:r.color_set}))}));
+      routes:h.routes.map(r=>({id:r.id,no:r.no,dirs:r.directions,color:r.color,color_set:r.color_set}))}));');
+  const re=new RegExp('(^|[^a-z0-9])'+escaped+'([^a-z0-9]|$)','i');
+  return candidates.some(v=>re.test(v));
+}
+function applyMapNameFixes(hofs){
+  const fixes=MAP_NAME_FIXES;
+  for(const h of hofs||[])for(const r of h.routes||[])for(const d of r.directions||[])for(const stop of d.stops||[]){
+    const candidates=[stop.name,stop.display,stop.ko,stop.resolved].map(normKey);
+    const fix=fixes.find(x=>{
+      const from=normKey(x.actual??x.from??x.name);
+      return from&&candidates.includes(from);
+    });
+    if(fix){
+      const to=String(fix.corrected??fix.to??fix.display??'').trim();
+      if(to)stop.display=to;
+    }
+  }
+}
+function applyRouteNumberFixes(hofs){
+  for(const h of hofs||[]){
+    const result=[];
+    for(const source of h.routes||[]){
+      const originalNo=String(source.no??'');
+      const routeFixes=ROUTE_NUMBER_FIXES.filter(x=>normKey(x.route)===normKey(originalNo));
+      const sharedFix=routeFixes.find(x=>Number(x.single_route)===0&&String(x.corrected??'').trim());
+      const base={...source,no:sharedFix?String(sharedFix.corrected).trim():originalNo,
+        sourceRouteNo:originalNo,dirs:[...(source.directions||[])]};
+      if(sharedFix){
+        base.dirs=base.dirs.map(d=>d);
+      }
+      const separateFixes=routeFixes.filter(x=>Number(x.single_route)===1&&String(x.corrected??'').trim()&&String(x.trip??'').trim());
+      let remaining=[...base.dirs];
+      for(const fix of separateFixes){
+        const matched=remaining.filter(d=>correctionTripMatches(d,fix.trip));
+        if(!matched.length)continue;
+        remaining=remaining.filter(d=>!matched.includes(d));
+        result.push({...base,id:String(source.id)+'::single::'+String(fix.trip)+'::'+String(fix.corrected),
+          no:String(fix.corrected).trim(),sourceRouteNo:originalNo,sourceTrip:String(fix.trip),
+          singleRoute:true,dirs:matched});
+      }
+      if(remaining.length){
+        result.push({...base,dirs:remaining});
+      }
+    }
+    h.routes=result;
+  }
+}
+async function loadCorrections(){
+  const [routeFile,mapFile,colorFile]=await Promise.all([
+    readStaticJson('route_number_corrections.json',{corrections:[]}),
+    readStaticJson('map_name_corrections.json',{corrections:[]}),
+    readStaticJson('route_colors.json',{default:DEFAULT_ROUTE_COLOR,colors:{}})
+  ]);
+  ROUTE_NUMBER_FIXES=Array.isArray(routeFile)?routeFile:(routeFile.corrections||[]);
+  MAP_NAME_FIXES=Array.isArray(mapFile)?mapFile:(mapFile.corrections||[]);
+  const colors=colorFile.colors&&typeof colorFile.colors==='object'?colorFile.colors:colorFile;
+  ROUTE_COLORS={};
+  for(const [k,v] of Object.entries(colors||{}))if(k!=='default'&&k!=='_help'&&validColor(v))ROUTE_COLORS[String(k)]=v;
+}
+
+/* ---------- HOF 노선 데이터 ---------- */
+async function loadRoutes(){
+  try{
+    await loadCorrections();
+    const j=await jget('/api/routes',REMOTE?'no-cache':'no-store');
+    applyMapNameFixes(j.hofs||[]);
+    applyRouteNumberFixes(j.hofs||[]);
+    const keepRg=st.rg!==null&&DATA[st.rg]?DATA[st.rg].id:null,keepRt=st.rt?st.rt.id:null;
+    DATA=(j.hofs||[]).filter(h=>!h.error&&h.routes.length).map(h=>({id:h.id,name:h.name,
+      routes:h.routes.map(r=>({id:r.id,no:r.no,dirs:r.dirs,color:r.color,color_set:r.color_set,
+        sourceRouteNo:r.sourceRouteNo,singleRoute:r.singleRoute,sourceTrip:r.sourceTrip}))}));
     st.rg=keepRg?DATA.findIndex(h=>h.id===keepRg):null;
     if(st.rg<0)st.rg=null;
     if(!st.live)st.rt=st.rg!==null&&keepRt?DATA[st.rg].routes.find(r=>r.id===keepRt)||null:null;
@@ -382,7 +473,16 @@ function liveIdx(r,d){
   if(!L||!L.journey)return null;
   const stops=r.dirs[d].stops||[];
   if(r.live){const p=journeyPosition();return {current:p.current,next:p.next}}
-  if(String(r.no)!==String(L.route))return null;
+  const sourceNo=String(r.sourceRouteNo??r.no);
+  if(sourceNo!==String(L.route))return null;
+  if(r.singleRoute&&!correctionTripMatches({
+    trip:L.journey&&L.journey.trip,
+    trip_no:L.journey&&L.journey.trip_no,
+    trip_number:L.journey&&L.journey.trip_number,
+    trip_label:L.journey&&L.journey.trip_label,
+    id:L.journey&&L.journey.trip_no,
+    tour:L.tour
+  },r.sourceTrip))return null;
   const p=journeyPosition();
   let current=-1,next=-1;
   if(p.current!==null&&L.stops[p.current])current=findStopIndex(stops,stopNames(L.stops[p.current]));
