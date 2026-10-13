@@ -209,7 +209,7 @@ let ROUTE_COLORS={};
 function validColor(c){return typeof c==='string'&&/^#[0-9a-f]{6}$/i.test(c)}
 const routeColor=r=>{
   const no=String(r&&r.no!=null?r.no:'');
-  const c=ROUTE_COLORS[no];
+  const c=validColor(r&&r.color)?r.color:ROUTE_COLORS[no];
   return validColor(c)?c:DEFAULT_ROUTE_COLOR;
 };
 const rgbOf=c=>{const m=/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(c||'');return m?[parseInt(m[1],16),parseInt(m[2],16),parseInt(m[3],16)]:[43,111,224]};
@@ -256,92 +256,32 @@ function show(id,push=true){
 }
 function back(){if(stack.length>1){stack.pop();show(stack[stack.length-1],false)}}
 
-/* ---------- 보정 파일 ---------- */
-let ROUTE_NUMBER_FIXES=[],MAP_NAME_FIXES=[];
-async function readStaticJson(file,fallback){
-  try{
-    const u=new URL(file,document.baseURI);
-    const r=await fetch(u.href,{cache:'no-store'});
-    if(!r.ok)return fallback;
-    return await r.json();
-  }catch(e){return fallback}
+/* ---------- 트립 식별 보조 함수 ---------- */
+function normKey(v){
+  let s=String(v??'').trim().toLowerCase().replace(/\s+/g,' ');
+  const m=/^trip\s+0*(\d+)$/.exec(s);
+  if(m)s=String(Number(m[1]));
+  else if(/^0*\d+$/.test(s))s=String(Number(s));
+  return s;
 }
-function normKey(v){return String(v??'').trim().toLowerCase().replace(/\\s+/g,' ')}
 function correctionTripMatches(dir,target){
   const wanted=normKey(target);
   if(!wanted)return false;
-  const candidates=[dir&&dir.trip,dir&&dir.trip_no,dir&&dir.trip_number,dir&&dir.trip_id,dir&&dir.id,dir&&dir.tour,dir&&dir.trip_label]
+  const candidates=[dir&&dir.trip,dir&&dir.trip_no,dir&&dir.trip_number,dir&&dir.trip_index,
+    dir&&dir.trip_id,dir&&dir.id,dir&&dir.tour,dir&&dir.trip_label]
     .filter(v=>v!==null&&v!==undefined&&String(v).trim()!=='').map(normKey);
-  if(candidates.some(v=>v===wanted))return true;
-  const tokens=wanted.split(/[^a-z0-9]+/).filter(Boolean);
-  return candidates.some(v=>{
-    const parts=v.split(/[^a-z0-9]+/).filter(Boolean);
-    return tokens.length===1&&parts.includes(wanted)||v.includes(wanted);
-  });
-}
-function applyMapNameFixes(hofs){
-  for(const h of hofs||[])for(const r of h.routes||[])for(const d of r.directions||[])for(const stop of d.stops||[]){
-    const candidates=[stop.name,stop.display,stop.ko,stop.resolved].map(normKey);
-    const fix=MAP_NAME_FIXES.find(x=>{
-      const from=normKey(x.actual??x.from??x.name);
-      return from&&candidates.includes(from);
-    });
-    if(fix){
-      const to=String(fix.corrected??fix.to??fix.display??'').trim();
-      if(to)stop.display=to;
-    }
-  }
-}
-function applyRouteNumberFixes(hofs){
-  for(const h of hofs||[]){
-    const result=[];
-    for(const source of h.routes||[]){
-      const originalNo=String(source.no??'');
-      const routeFixes=ROUTE_NUMBER_FIXES.filter(x=>normKey(x.route)===normKey(originalNo));
-      const sharedFix=routeFixes.find(x=>Number(x.single_route)===0&&String(x.corrected??'').trim());
-      const base={...source,no:sharedFix?String(sharedFix.corrected).trim():originalNo,
-        sourceRouteNo:originalNo,dirs:[...(source.directions||[])]};
-      const separateFixes=routeFixes.filter(x=>Number(x.single_route)===1&&String(x.corrected??'').trim()&&String(x.trip??'').trim());
-      let remaining=[...base.dirs];
-      for(const fix of separateFixes){
-        const matched=remaining.filter(d=>correctionTripMatches(d,fix.trip));
-        if(!matched.length)continue;
-        remaining=remaining.filter(d=>!matched.includes(d));
-        result.push({...base,id:String(source.id)+'::single::'+String(fix.trip)+'::'+String(fix.corrected),
-          no:String(fix.corrected).trim(),sourceRouteNo:originalNo,sourceTrip:String(fix.trip),
-          singleRoute:true,dirs:matched});
-      }
-      if(remaining.length)result.push({...base,dirs:remaining});
-    }
-    h.routes=result;
-  }
-}
-async function loadCorrections(){
-  const [routeFile,mapFile,colorFile]=await Promise.all([
-    readStaticJson('route_number_corrections.json',{corrections:[]}),
-    readStaticJson('map_name_corrections.json',{corrections:[]}),
-    readStaticJson('route_colors.json',{default:DEFAULT_ROUTE_COLOR,colors:{}})
-  ]);
-  ROUTE_NUMBER_FIXES=Array.isArray(routeFile)?routeFile:(routeFile.corrections||[]);
-  MAP_NAME_FIXES=Array.isArray(mapFile)?mapFile:(mapFile.corrections||[]);
-  const colors=colorFile.colors&&typeof colorFile.colors==='object'?colorFile.colors:colorFile;
-  ROUTE_COLORS={};
-  for(const [k,v] of Object.entries(colors||{})){
-    if(k!=='default'&&k!=='_help'&&k!=='colors'&&validColor(v))ROUTE_COLORS[String(k)]=v;
-  }
+  return candidates.includes(wanted);
 }
 
 /* ---------- HOF 노선 데이터 ---------- */
+/* ---------- HOF 노선 데이터 ---------- */
 async function loadRoutes(){
   try{
-    await loadCorrections();
     const j=await jget('/api/routes',REMOTE?'no-cache':'no-store');
-    applyMapNameFixes(j.hofs||[]);
-    applyRouteNumberFixes(j.hofs||[]);
     const keepRg=st.rg!==null&&DATA[st.rg]?DATA[st.rg].id:null,keepRt=st.rt?st.rt.id:null;
     DATA=(j.hofs||[]).filter(h=>!h.error&&h.routes&&h.routes.length).map(h=>({id:h.id,name:h.name,
-      routes:h.routes.map(r=>({id:r.id,no:r.no,dirs:r.dirs,color:r.color,color_set:r.color_set,
-        sourceRouteNo:r.sourceRouteNo,singleRoute:r.singleRoute,sourceTrip:r.sourceTrip}))}));
+      routes:h.routes.map(r=>({id:r.id,no:r.no,dirs:r.directions||[],color:r.color,color_set:r.color_set,
+        sourceRouteNo:r.source_no??r.no,singleRoute:!!r.single_route,sourceTrip:r.source_trip}))}));
     st.rg=keepRg?DATA.findIndex(h=>h.id===keepRg):null;
     if(st.rg<0)st.rg=null;
     if(!st.live)st.rt=st.rg!==null&&keepRt?DATA[st.rg].routes.find(r=>r.id===keepRt)||null:null;
@@ -415,6 +355,7 @@ function liveRoute(){
   const L=LIVE,J=L.journey;
   return {
     id:'__live__',no:L.route||'?',live:true,color:L.color,color_set:L.color_set,
+    sourceRouteNo:L.source_route??L.route,singleRoute:!!L.single_route,sourceTrip:L.source_trip,
     dirs:[{
       id:'live',
       trip:`${J.line_text||('Line '+(L.route||''))}${L.tour?' · '+L.tour+'투어':''} · ${L.trip||J.trip_label||''}`,
@@ -466,7 +407,8 @@ function liveIdx(r,d){
   const stops=r.dirs[d].stops||[];
   if(r.live){const p=journeyPosition();return {current:p.current,next:p.next}}
   const sourceNo=String(r.sourceRouteNo??r.no);
-  if(sourceNo!==String(L.route))return null;
+  const liveSourceNo=String(L.source_route??L.route);
+  if(sourceNo!==liveSourceNo)return null;
   if(r.singleRoute&&!correctionTripMatches({
     trip:L.journey&&L.journey.trip,
     trip_no:L.journey&&L.journey.trip_no,
