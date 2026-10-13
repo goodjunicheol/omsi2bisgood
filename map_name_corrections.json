@@ -1,0 +1,8 @@
+{
+  "_help": "actual은 HOF/API에서 들어오는 정류장 이름, corrected는 지도에 표시할 이름. 실제 정류장 식별을 위해 원본 name 값은 유지하고 표시 이름만 바꿉니다.",
+  "_example": {
+    "actual": "Old stop name",
+    "corrected": "Corrected stop name"
+  },
+  "corrections": []
+}
