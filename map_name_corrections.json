@@ -1,5 +1,5 @@
 {
-  "_help": "actual은 HOF/API에서 들어오는 정류장 이름, corrected는 지도에 표시할 이름. 실제 정류장 식별을 위해 원본 name 값은 유지하고 표시 이름만 바꿉니다.",
+  "_help": "이 파일은 GitHub Pages 웹페이지에서 직접 읽지 않습니다. PC에서 실행하는 Bis server.py와 같은 폴더의 동명 파일을 수정하세요. actual=원본 정류장 이름, corrected=화면에 표시할 이름. 원본 정류장 식별값은 변경하지 않습니다.",
   "_example": {
     "actual": "Old stop name",
     "corrected": "Corrected stop name"
