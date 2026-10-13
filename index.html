@@ -65,7 +65,7 @@ input{font:inherit}
 .ks .r2{font-size:19px;font-weight:800;margin:5px 0 7px;line-height:1.3;word-break:keep-all}
 .ks .r3{display:flex;flex-wrap:wrap;gap:3px 14px;font-size:12.5px;color:#6b7380}
 .ks .r3 b{color:#23262b;font-weight:700}
-.kst{display:flex;gap:6px;align-items:center;padding:9px 16px 4px;font-size:12px;color:#8a8f99}
+.kst{display:none}
 .kst i{display:inline-block;width:8px;height:8px;border-radius:4px;background:#c7ccd4}
 .kst i.on{background:var(--g)}
 .kst #upd{margin-left:auto}
@@ -467,22 +467,22 @@ function drawMap(){
   /* 정류장 목록 */
   let h='';
   stops.forEach((s,i)=>{
-    const first=i===0,last=i===n-1,w=s.row||null;
+    const first=i===0,last=i===n-1;
     const isCurrent=current!==null&&i===current;
     const traffic=trafficColor(stops[i+1]||s);
     const seg='';
-    /* 노선 화면은 차량의 실시간 시각·ETA·현재/다음 정류장 정보를 표시하지 않습니다. */
-    const right=w&&w.plan?`<small>${esc(w.plan)}</small>`:'';
-    const sub=`${s.ko&&s.name?s.name+' · ':''}${i+1}/${n}`;
+    /* 노선 상세에는 차량별 운행 시각이나 ETA를 표시하지 않습니다. */
+    const right='';
+    const sub=`${i+1}/${n}`;
     const tags=(first?'<em class="tag">기점</em>':'')+(last?'<em class="tag">종점</em>':'');
     /* 버스 위치: 정차 중이면 정류장 위, 이동 중이면 현재~다음 정류장의 정확히 중간 */
     let bus='';
     if(has&&(isCurrent||(current===null&&next!==null&&i===Math.max(0,next-1)&&!last))){
       const mid=!(atStop||next===null||current===null);
       bus=`<button class="bus sel${stale?' stale':''}" style="top:${mid?'calc(30px + var(--H) * .5)':'30px'}" onclick="openBus()" aria-label="버스 정보">
-        ${busLabel(L,r.no)}<span class="bi">${BUS_SVG}</span></button>`;
+        <span class="bi">${BUS_SVG}</span></button>`;
     }
-    h+=`<div class="it${last?' last':''}${done?' done':''}${nx?' nx':''}" data-i="${i}" style="--traffic:${traffic}">
+    h+=`<div class="it${last?' last':''}" data-i="${i}" style="--traffic:${traffic}">
       ${last?'':`<div class="ln${seg}"></div>`}
       <div class="dot${first||last?' end':''}"></div>
       <div class="sn"><b>${esc(s.display)}</b><span>${esc(sub)}</span><div class="tags">${tags}</div></div>
