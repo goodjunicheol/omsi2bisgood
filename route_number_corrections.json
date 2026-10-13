@@ -1,5 +1,5 @@
 {
-  "_help": "route는 API에서 들어오는 원래 노선번호, trip은 분리할 때 구분할 원본 트립 식별자, displayed는 현재 화면에 표시되던 번호 기록, corrected는 새로 표시할 번호, single_route는 0=노선번호 전체 보정(모든 트립), 1=해당 트립만 별도 노선으로 분리",
+  "_help": "이 파일은 GitHub Pages 웹페이지에서 직접 읽지 않습니다. PC에서 실행하는 Bis server.py와 같은 폴더의 동명 파일을 수정하세요. route=원본 노선번호, trip=대상 트립 번호 또는 이름, displayed=기존 표시번호(기록용), corrected=보정 노선번호, single_route=0이면 전체 노선 보정, 1이면 해당 트립만 별도 노선으로 분리",
   "_example": {
     "route": "502",
     "trip": "01",
