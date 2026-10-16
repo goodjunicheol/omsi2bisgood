@@ -165,12 +165,11 @@ input{font:inherit}
   <div class="sheet" id="sheet"></div>
 </section>
 
-<script src="config.js"></script>
 <script>
 /* ── API 주소 설정 ─────────────────────────────────────────────────────────────
    우선순위  ① 주소창 ?api=https://xxxx.trycloudflare.com  (한 번 열면 이 브라우저에 저장되고 주소창에서는 지워짐)
             ② 화면의 [변경] 버튼으로 저장한 값
-            ③ config.js 의 BIS_CONFIG.api
+            ③ 아래 DEFAULT_API 값 (비워 두면 사용 안 함)
             ④ 모두 비어 있으면 이 페이지를 서빙한 서버(로컬 모드: http://127.0.0.1:8765) */
 function normApi(v){
   v=String(v||'').trim();
@@ -181,6 +180,9 @@ function normApi(v){
   if(u.protocol!=='https:'&&!(u.protocol==='http:'&&local))return null;   // https 페이지에서는 http 주소를 브라우저가 막음
   return u.origin;                                                         // 뒤에 붙인 /api/live 같은 경로는 버림
 }
+/* 운영자 터널 주소를 여기에 넣으면 누구나 주소 입력 없이 바로 보입니다. 터널 주소가 바뀌면 이 한 줄만 고치세요.
+   예) const DEFAULT_API = "https://abcd-efgh.trycloudflare.com";   비워 두면 주소창 ?api= 또는 [주소 입력] 버튼 사용 */
+const DEFAULT_API="";
 function loadApi(){
   const get=()=>{try{return localStorage.getItem('bis_api')}catch(e){return null}};
   const set=v=>{try{v?localStorage.setItem('bis_api',v):localStorage.removeItem('bis_api')}catch(e){}};
@@ -190,7 +192,7 @@ function loadApi(){
     if(n!==null)set(n);
     try{history.replaceState(null,'',location.pathname+location.hash)}catch(e){}
   }
-  return normApi(get())||normApi((window.BIS_CONFIG||{}).api)||'';
+  return normApi(get())||normApi(DEFAULT_API)||'';
 }
 const API=loadApi();
 function setApi(){
@@ -587,7 +589,7 @@ async function pollLive(){
 }
 async function refresh(){await loadRoutes();await pollLive();if(st.rt)drawMap()}
 
-const REMOTE_MS=Math.max(2000,Number((window.BIS_CONFIG||{}).pollMs)||10000);   // 인터넷에서 열 때의 갱신 주기(기본 10초)
+const REMOTE_MS=10000;   // 인터넷에서 열 때의 갱신 주기(기본 10초)
 let pollMs=REMOTE?REMOTE_MS:1000,fails=0;
 async function loop(){
   if(!document.hidden){
