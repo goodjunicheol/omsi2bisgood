@@ -129,12 +129,19 @@ input{font:inherit}
 .bl::after{content:"";position:absolute;right:-6px;top:50%;transform:translateY(-50%);border-top:6px solid transparent;border-bottom:6px solid transparent;border-left:6px solid #fff}
 .bl .bl1{color:inherit}
 .bl .bl2{font-size:11.5px;font-weight:700}
+.rlist{padding:12px 16px 0}
+.rl-t{font-size:13px;font-weight:700;color:var(--sub);margin:0 0 6px 2px}
+.rl-i{display:flex;align-items:center;gap:10px;width:100%;background:#fff;border:1px solid var(--ln);border-radius:12px;padding:12px 12px;margin-bottom:8px;text-align:left}
+.rl-i:active{background:#eef3fc}
+.rl-no{font-size:20px;font-weight:800;min-width:58px}
+.rl-m{flex:1;min-width:0}.rl-m b{display:block;font-size:14.5px}.rl-m small{display:block;font-size:12px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 </style>
 </head>
 <body>
 
 <section class="scr on" id="s-region">
   <div class="hero"><h1>버스 실시간 정보</h1><p>운행 지역(HOF)을 선택하세요</p><div class="lbn" id="liveBn"></div><div class="apiset" id="apiSet"></div></div>
+  <div class="rlist" id="rlist"></div>
   <div class="grid" id="regions"></div>
 </section>
 
@@ -216,6 +223,8 @@ const rgbOf=c=>{const m=/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(c||''
 const rgba=(c,a)=>`rgba(${rgbOf(c).join(',')},${a})`;
 
 let DATA=[],LIVE=null,REV=null,ERR=false,lastKey='';
+let RUNS=[],VIEW=null,VIEW_KEY=null,VIEW_REMOTE=false;
+function curLive(){return (VIEW_REMOTE&&VIEW&&$('#s-map')&&$('#s-map').classList.contains('on'))?VIEW:LIVE}
 const st={rg:null,rt:null,dir:0,bus:false,live:false,auto:null,sticky:null,lastBusKey:null};
 const stack=['s-region'];
 
@@ -275,6 +284,30 @@ async function loadRoutes(){
   if(st.rt&&$('#s-map').classList.contains('on'))drawMap();
 }
 
+/* 지금 운행 중: 내 PC + 다른 PC (운영자 주소로 받은 운행) */
+function drawRunList(){
+  const el=$('#rlist');if(!el)return;
+  const items=[];
+  if(LIVE&&LIVE.connected&&LIVE.journey)items.push({key:'__mine__',v:LIVE});
+  RUNS.forEach(r=>items.push({key:r.run_key,v:toLive(r)}));
+  if(!items.length){el.innerHTML='';el.dataset.keys='[]';return}
+  el.innerHTML='<div class="rl-t">지금 운행 중</div>'+items.map((it,i)=>{
+    const v=it.v,rc=v.color||'#2b6fe0',ni=v.next_stop_display||'종점';
+    return `<button class="rl-i" onclick="openRun(${i})"><span class="rl-no" style="color:${esc(rc)}">${esc(v.route||'?')}</span>
+      <span class="rl-m"><b>${esc(v.direction||'')} 방면</b><small>다음 ${esc(ni)}${v.next_eta_min!=null?' · '+etaTx(v.next_eta_min):''}${v.delay_text?' · 지연 '+esc(v.delay_text):''}</small></span>
+      ${busLabel(v,v.route||'')}</button>`;
+  }).join('');
+  el.dataset.keys=JSON.stringify(items.map(it=>it.key));
+}
+function openRun(i){
+  const keys=JSON.parse($('#rlist').dataset.keys||'[]');const key=keys[i];
+  if(key==='__mine__'){VIEW=null;VIEW_REMOTE=false;openLive();return}
+  const r=RUNS.find(x=>x.run_key===key);if(!r)return;
+  VIEW_KEY=key;VIEW=toLive(r);VIEW_REMOTE=true;
+  st.live=true;st.rg=null;st.rt=liveRoute();
+  stack.length=0;stack.push('s-region');
+  pickDir(0);
+}
 function drawRegions(){
   $('#regions').innerHTML=DATA.length?DATA.map((r,i)=>`<button class="rg" onclick="pickRegion(${i})"><b>${esc(r.name)}</b><span>노선 ${r.routes.length}개</span></button>`).join('')
    :`<div class="empty" style="grid-column:span 2">${ERR?'Python 서버에 연결할 수 없습니다.<br>bis_server.py 를 실행하면 자동으로 다시 연결합니다.':'표시할 HOF가 없습니다.<br>HOF 폴더에 .hof 파일을 넣어 주세요.'}</div>`;
@@ -299,6 +332,20 @@ function pickRoute(i){st.live=false;st.rt=DATA[st.rg].routes[i];pickDir(0)}
 function pickDir(d){st.dir=d;st.lastBusKey=null;st.sticky=null;show('s-map');$('#sq').value='';drawMap()}
 function setDir(d){st.dir=d;st.lastBusKey=null;st.sticky=null;closeSheet();drawMap();window.scrollTo(0,0)}
 function etaTx(m){return m==null?'':(m<=0?'곧 도착':m+'분 후')}
+/* 다른 PC 가 보낸 운행을 같은 화면에서 그릴 수 있는 형식으로 바꾼다 */
+function toLive(r){
+  const stops=(r.stops||[]).map(s=>({...s,ko:s.ko||''}));
+  const ci=r.current_index,ni=r.next_index;
+  return {connected:true,age_sec:r.age_sec||0,route:r.route,tour:r.tour,trip:'Trip '+r.trip_no,
+    direction:r.direction,color:r.color,color_set:true,delay_text:r.delay_text,delay_sec:r.delay_sec,
+    current_index:ci,next_index:ni,stops,
+    next_stop_display:(ni!=null&&stops[ni])?(stops[ni].display||stops[ni].name):null,
+    current_stop_display:(ci!=null&&stops[ci])?(stops[ci].display||stops[ci].name):null,
+    next_eta_min:r.next_eta_min,next_eta_clock:r.next_eta_clock,
+    vehicle_profile:(r.vehicle&&r.vehicle.plate)?{configured:true,plate:r.vehicle.plate,low_floor:!!r.vehicle.low_floor,double_deck:!!r.vehicle.double_deck}:{configured:false},
+    journey:{status:r.status,map:r.map,line_text:r.line_text,trip_no:r.trip_no,tour:r.tour,vehicle:null,driver:null,trip_label:'Trip '+r.trip_no},
+    diag:{code:'ok',level:'ok',message:''},static_snapshot:false};
+}
 
 /* ---------- 내 차량 (desktop.html 에서 설정: 차량번호 뒤 4자리 / 저상 / 2층) ----------
    저상 X · 2층 X · 1849   →  1849
@@ -325,7 +372,7 @@ function drawFav(){const b=$('#favBtn');if(b)b.classList.toggle('fav',!!st.rt&&f
 
 /* ---------- 실시간 운행(Journey) 노선 ---------- */
 function liveRoute(){
-  const L=LIVE,J=L.journey;
+  const L=(VIEW_REMOTE&&VIEW)?VIEW:LIVE,J=L.journey;
   return {
     id:'__live__',no:L.route||'?',live:true,color:L.color,color_set:L.color_set,
     dirs:[{
@@ -347,7 +394,7 @@ function hasRealTime(s){
   });
 }
 function journeyPosition(){
-  const L=LIVE;
+  const L=curLive();
   if(!L||!L.journey||!Array.isArray(L.stops)||!L.stops.length)return {current:null,next:null};
   let current=null;
   for(let i=0;i<L.stops.length;i++)if(hasRealTime(L.stops[i]))current=i;
@@ -374,7 +421,7 @@ function findStopIndex(stops,value){
 }
 /* 이 노선 화면에서 버스가 어디 있는지. 같은 노선 번호일 때만 표시하고, 못 찾으면 null */
 function liveIdx(r,d){
-  const L=LIVE;
+  const L=curLive();
   if(!L||!L.journey)return null;
   const stops=r.dirs[d].stops||[];
   if(r.live){const p=journeyPosition();return {current:p.current,next:p.next}}
@@ -405,9 +452,9 @@ function trafficColor(s){
 
 /* ---------- 노선 화면 그리기 ---------- */
 function drawMap(){
-  if(st.live&&LIVE&&LIVE.journey)st.rt=liveRoute();
+  if(st.live&&curLive()&&curLive().journey)st.rt=liveRoute();
   const r=st.rt;if(!r)return;
-  const dr=r.dirs[st.dir]||r.dirs[0],stops=dr.stops||[],n=stops.length,L=LIVE;
+  const dr=r.dirs[st.dir]||r.dirs[0],stops=dr.stops||[],n=stops.length,L=curLive();
   const pos=liveIdx(r,st.dir),has=pos!==null&&!!L&&!!L.journey;
   const current=has?pos.current:null,next=has?pos.next:null,J=has?L.journey:null;
   const atStop=!!J&&J.status==='at_stop',stale=has&&!L.connected,fin=!!J&&J.status==='finished';
@@ -489,7 +536,7 @@ function keepBusVisible(){
 }
 function goBus(){const e=document.querySelector('.bus');if(e)e.scrollIntoView({block:'center',behavior:'smooth'})}
 function updStamp(){
-  const d=new Date(),p=x=>String(x).padStart(2,'0'),L=LIVE,on=L&&L.connected&&L.journey;
+  const d=new Date(),p=x=>String(x).padStart(2,'0'),L=curLive(),on=L&&L.connected&&L.journey;
   $('#upd').textContent=`${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())} 갱신`;
   $('#lgDot').className=on?'on':'';
   $('#lgTx').textContent=on?`운행 로그 연결됨 · 지연 ${L.delay_text||'0'}`
@@ -513,7 +560,7 @@ function findStop(){
 function openBus(){st.bus=true;drawSheet();$('#sheet').classList.add('on')}
 function closeSheet(){st.bus=false;$('#sheet').classList.remove('on')}
 function drawSheet(){
-  const r=st.rt,L=LIVE,pos=r?liveIdx(r,st.dir):null;
+  const r=st.rt,L=curLive(),pos=r?liveIdx(r,st.dir):null;
   if(pos===null||!L||!L.journey){closeSheet();return}
   const J=L.journey,S=L.stops||[],n=S.length,ci=pos.current,ni=pos.next,stale=!L.connected;
   const disp=i=>(S[i]?.display||S[i]?.name||'');
@@ -553,12 +600,13 @@ function drawApiSet(){
 }
 function drawBanner(){
   drawApiSet();
-  const b=$('#liveBn'),L=LIVE,hasJ=L&&L.journey,stale=hasJ&&!L.connected;
+  const b=$('#liveBn'),L=curLive(),hasJ=L&&L.journey,stale=hasJ&&!L.connected;
   if(ERR){b.innerHTML='<span>서버 연결 안 됨 · 재시도 중</span>';return}
   if(!hasJ){b.innerHTML=`<span style="white-space:normal">${esc(L&&L.diag?L.diag.message:'운행 로그 대기 중')}</span>`;return}
   b.innerHTML=`<span style="white-space:normal">${stale?'마지막 운행 · ':''}<b>${esc(L.route||'')}</b>${vehOf(L)?' '+esc(vehText(L)):''} ${esc(L.direction||'')} · 다음 ${esc(L.next_stop_display||'종점')}${!stale&&L.next_eta_min!=null?' · '+etaTx(L.next_eta_min):''}${stale?'<br>'+esc(L.diag.message):''}</span><button onclick="openLive()">노선도</button>`;
 }
 function openLive(){
+  VIEW_REMOTE=false;
   if(!LIVE||!LIVE.journey)return;
   st.live=true;st.rg=null;st.rt=liveRoute();
   stack.length=0;stack.push('s-region');
@@ -568,6 +616,12 @@ async function pollLive(){
   try{
     const j=adjustStatic(await jget('/api/live')),wasErr=ERR;
     ERR=false;LIVE=j;
+    try{const rr=await jget('/api/relay/runs');RUNS=(rr&&rr.runs)||[];}catch(e){}
+    if(VIEW_REMOTE&&VIEW_KEY){
+      const cur=RUNS.find(x=>x.run_key===VIEW_KEY);
+      if(cur){VIEW=toLive(cur)}else if(VIEW){VIEW.connected=false;VIEW.diag={code:'gone',level:'warn',message:'이 운행의 새 정보가 더 이상 오지 않습니다'}}
+    }
+    drawRunList();
     if(wasErr||(REV!==null&&j.rev!==REV))await loadRoutes();
     REV=j.rev;
     drawBanner();
@@ -595,7 +649,7 @@ async function loop(){
   if(!document.hidden){
     await pollLive();
     fails=ERR?fails+1:0;
-    pollMs=LIVE&&LIVE.static_snapshot?Math.max(10000,REMOTE_MS):(REMOTE?REMOTE_MS:1000);   // Netlify 스냅샷은 수십 초~수 분 간격으로만 바뀜
+    pollMs=curLive()&&curLive().static_snapshot?Math.max(10000,REMOTE_MS):(REMOTE?REMOTE_MS:1000);   // Netlify 스냅샷은 수십 초~수 분 간격으로만 바뀜
   }
   setTimeout(loop,ERR?Math.min(30000,pollMs*Math.pow(2,Math.min(fails,4))):pollMs);
 }
