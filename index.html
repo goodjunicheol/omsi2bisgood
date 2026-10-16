@@ -65,7 +65,7 @@ input{font:inherit}
 .ks .r2{font-size:19px;font-weight:800;margin:5px 0 7px;line-height:1.3;word-break:keep-all}
 .ks .r3{display:flex;flex-wrap:wrap;gap:3px 14px;font-size:12.5px;color:#6b7380}
 .ks .r3 b{color:#23262b;font-weight:700}
-.kst{display:none}
+.kst{display:flex;gap:6px;align-items:center;padding:9px 16px 4px;font-size:12px;color:#8a8f99}
 .kst i{display:inline-block;width:8px;height:8px;border-radius:4px;background:#c7ccd4}
 .kst i.on{background:var(--g)}
 .kst #upd{margin-left:auto}
@@ -97,18 +97,14 @@ input{font:inherit}
 .rt2 b.soon{color:var(--r)}
 .rt2 small{display:block;font-size:11.5px;color:#9096a1;margin-top:2px}
 /* 버스: 노선 색 원 + 왼쪽에 차량번호 라벨 */
-.bus{position:absolute;left:74px;width:max-content;display:flex;justify-content:flex-start;align-items:center;gap:5px;transform:translateY(-50%);z-index:4}
+.bus{position:absolute;left:4px;width:max-content;display:flex;justify-content:flex-start;align-items:center;gap:6px;transform:translateY(-50%);z-index:4}
 .bus.stale{opacity:.5}
 .bi{flex:none;width:30px;height:30px;border-radius:15px;background:var(--rc);border:2px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center}
 .bi svg{width:17px;height:17px;fill:#fff}
 .bus:not(.stale) .bi{animation:pu 1.8s ease-out infinite}
 @keyframes pu{0%{box-shadow:0 1px 5px rgba(0,0,0,.35),0 0 0 0 rgba(0,0,0,.22)}100%{box-shadow:0 1px 5px rgba(0,0,0,.35),0 0 0 10px rgba(0,0,0,0)}}
 /* 차량 라벨: '1849' / '1850 저상' / '1851 저상' + 아래줄 '2층' */
-.bl{display:inline-grid;grid-template-columns:auto auto;column-gap:3px;row-gap:2px;align-items:center;justify-items:start;background:#fff;border:1px solid #dfe2e6;border-radius:8px;padding:2px 5px;box-shadow:0 1px 3px rgba(0,0,0,.12);text-align:left}
-.bl .bp{grid-column:1;grid-row:1;font-size:12.5px;font-weight:800;color:#1c1f24;letter-spacing:.2px;line-height:1.3}
 .tg{font-style:normal;font-size:10.5px;font-weight:700;border-radius:4px;padding:1px 4px;line-height:1.3;white-space:nowrap}
-.tg.lo{grid-column:2;grid-row:1;background:#e8f1ff;color:#2b6fe0}
-.tg.dd{grid-column:2;grid-row:2;background:#fff0e0;color:#d4580a}
 .kfab{position:fixed;right:max(16px,calc(50vw - 244px));bottom:calc(env(safe-area-inset-bottom,0px) + 20px);width:52px;height:52px;border-radius:26px;background:#fff;border:1px solid #dfe2e6;box-shadow:0 2px 10px rgba(0,0,0,.22);z-index:30;display:flex;align-items:center;justify-content:center}
 .kfab svg{width:25px;height:25px;fill:var(--rc)}
 .kfab:active{background:#f3f4f6}
@@ -127,6 +123,12 @@ input{font:inherit}
 .apiset b{color:var(--tx);word-break:break-all}
 .apiset button{color:var(--pri);font-weight:700;padding:2px 6px}
 .apiset .w{color:var(--r)}
+/* 차량 라벨: 흰 배경 + 회색 테두리 + 오른쪽 뾰족한 꼬리(버스 쪽). 2층은 아래 줄 가운데 */
+.bl{position:relative;display:inline-flex;flex-direction:column;align-items:center;white-space:nowrap;background:#fff;border:1px solid #aab0ba;border-radius:5px;box-shadow:none;padding:2px 7px;margin-right:7px;color:#1c1f24;font-size:12.5px;font-weight:700;line-height:1.3;text-align:center}
+.bl::before{content:"";position:absolute;right:-8px;top:50%;transform:translateY(-50%);border-top:7px solid transparent;border-bottom:7px solid transparent;border-left:7px solid #aab0ba}
+.bl::after{content:"";position:absolute;right:-6px;top:50%;transform:translateY(-50%);border-top:6px solid transparent;border-bottom:6px solid transparent;border-left:6px solid #fff}
+.bl .bl1{color:inherit}
+.bl .bl2{font-size:11.5px;font-weight:700}
 </style>
 </head>
 <body>
@@ -203,15 +205,11 @@ function setApi(){
 const REMOTE=!!API||!/^(localhost$|127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|\[?::1)/.test(location.hostname);
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const DEFAULT_ROUTE_COLOR='#2b6fe0';
-let ROUTE_COLORS={};
-/* route_colors.json에 지정된 색만 사용하고, 나머지는 모두 기본 파란색 */
-function validColor(c){return typeof c==='string'&&/^#[0-9a-f]{6}$/i.test(c)}
-const routeColor=r=>{
-  const no=String(r&&r.no!=null?r.no:'');
-  const c=validColor(r&&r.color)?r.color:ROUTE_COLORS[no];
-  return validColor(c)?c:DEFAULT_ROUTE_COLOR;
-};
+const PAL=[['#2b6fe0','#6a4de0'],['#1a9b4b','#14a5a0'],['#d6342c','#e0762c'],['#d98d00','#e0562c'],['#7a4fd1','#c04fa8'],['#0f8fb5','#2b6fe0'],['#c23a7b','#e0592c']];
+const hash=s=>{let h=2166136261;for(const c of String(s)){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0};
+const col=no=>PAL[hash(no)%PAL.length][0];
+/* route_colors.json 에 색이 적힌 노선은 그 색, 아니면 번호로 정한 기본 팔레트 */
+const routeColor=r=>r&&r.color_set&&r.color?r.color:col(r?r.no:'');
 const rgbOf=c=>{const m=/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(c||'');return m?[parseInt(m[1],16),parseInt(m[2],16),parseInt(m[3],16)]:[43,111,224]};
 const rgba=(c,a)=>`rgba(${rgbOf(c).join(',')},${a})`;
 
@@ -256,32 +254,13 @@ function show(id,push=true){
 }
 function back(){if(stack.length>1){stack.pop();show(stack[stack.length-1],false)}}
 
-/* ---------- 트립 식별 보조 함수 ---------- */
-function normKey(v){
-  let s=String(v??'').trim().toLowerCase().replace(/\s+/g,' ');
-  const m=/^trip\s+0*(\d+)$/.exec(s);
-  if(m)s=String(Number(m[1]));
-  else if(/^0*\d+$/.test(s))s=String(Number(s));
-  return s;
-}
-function correctionTripMatches(dir,target){
-  const wanted=normKey(target);
-  if(!wanted)return false;
-  const candidates=[dir&&dir.trip,dir&&dir.trip_no,dir&&dir.trip_number,dir&&dir.trip_index,
-    dir&&dir.trip_id,dir&&dir.id,dir&&dir.tour,dir&&dir.trip_label]
-    .filter(v=>v!==null&&v!==undefined&&String(v).trim()!=='').map(normKey);
-  return candidates.includes(wanted);
-}
-
-/* ---------- HOF 노선 데이터 ---------- */
 /* ---------- HOF 노선 데이터 ---------- */
 async function loadRoutes(){
   try{
     const j=await jget('/api/routes',REMOTE?'no-cache':'no-store');
     const keepRg=st.rg!==null&&DATA[st.rg]?DATA[st.rg].id:null,keepRt=st.rt?st.rt.id:null;
-    DATA=(j.hofs||[]).filter(h=>!h.error&&h.routes&&h.routes.length).map(h=>({id:h.id,name:h.name,
-      routes:h.routes.map(r=>({id:r.id,no:r.no,dirs:r.directions||[],color:r.color,color_set:r.color_set,
-        sourceRouteNo:r.source_no??r.no,singleRoute:!!r.single_route,sourceTrip:r.source_trip}))}));
+    DATA=(j.hofs||[]).filter(h=>!h.error&&h.routes.length).map(h=>({id:h.id,name:h.name,
+      routes:h.routes.map(r=>({id:r.id,no:r.no,dirs:r.directions,color:r.color,color_set:r.color_set}))}));
     st.rg=keepRg?DATA.findIndex(h=>h.id===keepRg):null;
     if(st.rg<0)st.rg=null;
     if(!st.live)st.rt=st.rg!==null&&keepRt?DATA[st.rg].routes.find(r=>r.id===keepRt)||null:null;
@@ -309,11 +288,9 @@ function drawRoutes(){
     d.stops.some(s=>(s.display+' '+s.name).toLowerCase().includes(q))));
   $('#routes').innerHTML=list.length?list.map(r=>{
     const i=g.routes.indexOf(r),d=r.dirs[0],n=d.stops.length;
-    const destinations=[...new Set(r.dirs.map(x=>x.destination_display||x.destination||'').filter(Boolean))];
-    const directionText=destinations.length?destinations.map(x=>esc(x)+' 방면').join(' · '):r.dirs.map(x=>esc(x.trip)).join(' · ');
     return `<button class="rt" onclick="pickRoute(${i})"><span class="no" style="color:${routeColor(r)}">${esc(r.no)}</span>
     <span class="m"><small>방향 ${r.dirs.length}개 · 정류장 ${n}개</small>
-    <b>${esc(d.stops[0].display)} ↔ ${esc(d.stops[n-1].display)}</b><small>${directionText}</small></span><span class="arrow">›</span></button>`}).join('')
+    <b>${esc(d.stops[0].display)} ↔ ${esc(d.stops[n-1].display)}</b><small>${esc(d.trip)}</small></span><span class="arrow">›</span></button>`}).join('')
     :'<div class="empty">검색 결과가 없습니다</div>';
 }
 function pickRoute(i){st.live=false;st.rt=DATA[st.rg].routes[i];pickDir(0)}
@@ -325,17 +302,11 @@ function etaTx(m){return m==null?'':(m<=0?'곧 도착':m+'분 후')}
    저상 X · 2층 X · 1849   →  1849
    저상 O · 2층 X · 1850   →  1850 저상
    저상 O · 2층 O · 1851   →  1851 저상 / (아래줄) 2층 */
-function vehOf(L){
-  const raw=L&&(L.vehicle_profile||L.my_vehicle);
-  if(!raw)return null;
-  const plate=raw.plate??raw.number??'';
-  const p={plate,low_floor:raw.low_floor??0,double_deck:raw.double_deck??raw.double_decker??0,
-    configured:raw.configured??!!plate};
-  return p.configured?p:null
-}
+function vehOf(L){const p=L&&L.vehicle_profile;return p&&p.configured?p:null}
 function busLabel(L,fallback){
   const p=vehOf(L);
-  return `<span class="bl"><b class="bp">${esc(p&&p.plate?p.plate:fallback)}</b>${p&&p.low_floor?'<i class="tg lo">저상</i>':''}${p&&p.double_deck?'<i class="tg dd">2층</i>':''}</span>`;
+  const line1=`${esc(p&&p.plate?p.plate:fallback)}${p&&p.low_floor?' 저상':''}`;
+  return `<span class="bl"><span class="bl1">${line1}</span>${p&&p.double_deck?'<span class="bl2">2층</span>':''}</span>`;
 }
 function vehText(L){const p=vehOf(L);return p?`${p.plate}${p.low_floor?' 저상':''}${p.double_deck?' 2층':''}`:''}
 const BUS_SVG='<svg viewBox="0 0 24 24"><path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/></svg>';
@@ -355,7 +326,6 @@ function liveRoute(){
   const L=LIVE,J=L.journey;
   return {
     id:'__live__',no:L.route||'?',live:true,color:L.color,color_set:L.color_set,
-    sourceRouteNo:L.source_route??L.route,singleRoute:!!L.single_route,sourceTrip:L.source_trip,
     dirs:[{
       id:'live',
       trip:`${J.line_text||('Line '+(L.route||''))}${L.tour?' · '+L.tour+'투어':''} · ${L.trip||J.trip_label||''}`,
@@ -406,17 +376,7 @@ function liveIdx(r,d){
   if(!L||!L.journey)return null;
   const stops=r.dirs[d].stops||[];
   if(r.live){const p=journeyPosition();return {current:p.current,next:p.next}}
-  const sourceNo=String(r.sourceRouteNo??r.no);
-  const liveSourceNo=String(L.source_route??L.route);
-  if(sourceNo!==liveSourceNo)return null;
-  if(r.singleRoute&&!correctionTripMatches({
-    trip:L.journey&&L.journey.trip,
-    trip_no:L.journey&&L.journey.trip_no,
-    trip_number:L.journey&&L.journey.trip_number,
-    trip_label:L.journey&&L.journey.trip_label,
-    id:L.journey&&L.journey.trip_no,
-    tour:L.tour
-  },r.sourceTrip))return null;
+  if(String(r.no)!==String(L.route))return null;
   const p=journeyPosition();
   let current=-1,next=-1;
   if(p.current!==null&&L.stops[p.current])current=findStopIndex(stops,stopNames(L.stops[p.current]));
@@ -455,36 +415,58 @@ function drawMap(){
   /* 헤더 */
   $('#mNo').textContent=r.no;$('#mNo').style.color=rc;
   const ty=$('#mTy');
-  ty.textContent='노선 정보';
+  ty.textContent=has?(stale?'마지막 운행 기록':(fin?'운행 종료':'실시간 운행')):'노선 정보';
   ty.style.background=rgba(rc,.12);ty.style.color=rc;
-  $('#mSub').innerHTML=`<b>${esc(stops[0]?stops[0].display:'')}</b> ~ <b>${esc(stops[n-1]?stops[n-1].display:'')}</b> · 정류장 ${n}개`;
-  $('#mDir').innerHTML=`<span><b>${esc(dr.destination_display||dr.destination||'')}</b> 방면</span>${r.dirs.length>1?`<button class="ksw" onclick="setDir(${(st.dir+1)%r.dirs.length})"><svg viewBox="0 0 24 24"><path d="M7 4v14M3 14l4 4 4-4M17 20V6M13 10l4-4 4 4"/></svg>방향 전환</button>`:''}`;
+  $('#mSub').innerHTML=`<b>${esc(stops[0]?stops[0].display:'')}</b> ~ <b>${esc(stops[n-1]?stops[n-1].display:'')}</b> · 정류장 ${n}개<br>${esc(dr.trip)}`;
+  $('#mDir').innerHTML=`<span><b>${esc(dr.destination_display)}</b> 방면</span>${r.dirs.length>1?`<button class="ksw" onclick="setDir(${(st.dir+1)%r.dirs.length})"><svg viewBox="0 0 24 24"><path d="M7 4v14M3 14l4 4 4-4M17 20V6M13 10l4-4 4 4"/></svg>방향 전환</button>`:''}`;
   drawFav();
 
-  /* 노선 상세에는 차량 운행 요약을 표시하지 않습니다. 차량 정보는 버스 아이콘을 눌렀을 때만 표시합니다. */
-  $('#lc').className='ks';
+  /* 운행 요약 카드 (단색) */
+  const lc=$('#lc');
+  if(has){
+    const nextName=next!==null?(stops[next]?.display||stops[next]?.name||''):'';
+    const currentName=current!==null?(stops[current]?.display||stops[current]?.name||''):'';
+    const w=next!==null?stops[next]?.row:null;
+    const eta=!stale&&next!==null?(w&&w.eta_min!=null?w.eta_min:L.next_eta_min):null;
+    lc.style.background=rgba(rc,.07);lc.style.borderColor=rgba(rc,.2);lc.className='ks on';
+    lc.innerHTML=`<div class="r1">${busLabel(L,r.no)}<span>${stale?'마지막 운행 기록 · '+Math.floor((L.age_sec||0)/60)+'분 전':(fin?'운행 종료':(atStop?'정차 중':(current===null?'출발 전':'운행 중')))}</span></div>
+      <div class="r2">${next!==null?'다음 '+esc(nextName)+(eta!=null?' · '+etaTx(eta):''):(fin?esc(currentName)+' 도착':esc((stops[0]&&stops[0].display)||''))}</div>
+      <div class="r3"><span>현재 <b>${esc(currentName||'출발 전')}</b></span><span>지연 <b>${esc(L.delay_text||'-')}</b></span>${L.next_eta_clock&&!stale&&next!==null?`<span>예정 <b>${esc(L.next_eta_clock)}</b></span>`:''}</div>`;
+  }else lc.className='ks';
 
   /* 정류장 목록 */
   let h='';
   stops.forEach((s,i)=>{
-    const first=i===0,last=i===n-1;
-    const isCurrent=current!==null&&i===current;
+    const first=i===0,last=i===n-1,w=s.row||null;
+    const done=current!==null&&i<current,nx=next!==null&&i===next,isCurrent=current!==null&&i===current;
     const traffic=trafficColor(stops[i+1]||s);
-    const seg='';
-    /* 노선 상세에는 차량별 운행 시각이나 ETA를 표시하지 않습니다. */
-    const right='';
-    const sub=`${i+1}/${n}`;
-    const tags=(first?'<em class="tag">기점</em>':'')+(last?'<em class="tag">종점</em>':'');
+    const seg=done?' done':'';
+    const actual=w?.real||w?.dep_real||w?.arr_real||'';
+    /* 오른쪽: 도착 예정(분, 몇 번째 전) / 이미 지난 정류장은 실제 시각 */
+    let right='';
+    if(has&&!stale&&next!==null&&i>=next&&i<next+8&&w&&w.eta_min!=null){
+      const ahead=i-(current!==null?current:next-1);
+      right=`<b class="${w.eta_min<=1?'soon':''}">${w.eta_min<=0?'곧 도착':w.eta_min+'분'}</b><small>${ahead>0?ahead+'번째 전':'다음'}</small>`;
+    }else if(has&&next!==null&&i>=next&&!stale&&!w&&i===next&&L.next_eta_min!=null){
+      right=`<b class="${L.next_eta_min<=1?'soon':''}">${L.next_eta_min<=0?'곧 도착':L.next_eta_min+'분'}</b><small>다음</small>`;
+    }else if(actual&&current!==null&&i<=current){
+      right=`<small>${esc(actual)}</small>`;
+    }else if(w&&w.plan){
+      right=`<small>${esc(w.plan)}</small>`;
+    }
+    const sub=w&&w.plan?`${w.plan}${actual?' → '+actual:''}${w.diff?' ('+w.diff+')':''}`:`${s.ko?s.name+' · ':''}${i+1}/${n}`;
+    const tags=(first?'<em class="tag">기점</em>':'')+(last?'<em class="tag">종점</em>':'')
+      +(nx?'<em class="tag nx">다음 정류장</em>':'')+(isCurrent?`<em class="tag cu">${atStop?'정차 중':'현재'}</em>`:'');
     /* 버스 위치: 정차 중이면 정류장 위, 이동 중이면 현재~다음 정류장의 정확히 중간 */
     let bus='';
     if(has&&(isCurrent||(current===null&&next!==null&&i===Math.max(0,next-1)&&!last))){
       const mid=!(atStop||next===null||current===null);
       bus=`<button class="bus sel${stale?' stale':''}" style="top:${mid?'calc(30px + var(--H) * .5)':'30px'}" onclick="openBus()" aria-label="버스 정보">
-        <span class="bi">${BUS_SVG}</span>${busLabel(L,r.no)}</button>`;
+        ${busLabel(L,r.no)}<span class="bi">${BUS_SVG}</span></button>`;
     }
-    h+=`<div class="it${last?' last':''}" data-i="${i}" style="--traffic:${traffic}">
+    h+=`<div class="it${last?' last':''}${done?' done':''}${nx?' nx':''}" data-i="${i}" style="--traffic:${traffic}">
       ${last?'':`<div class="ln${seg}"></div>`}
-      <div class="dot${first||last?' end':''}"></div>
+      <div class="dot${first||last?' end':''}${done?' done':''}${nx?' nx':''}"></div>
       <div class="sn"><b>${esc(s.display)}</b><span>${esc(sub)}</span><div class="tags">${tags}</div></div>
       <div class="rt2">${right}</div>${bus}</div>`;
   });
@@ -572,7 +554,7 @@ function drawBanner(){
   const b=$('#liveBn'),L=LIVE,hasJ=L&&L.journey,stale=hasJ&&!L.connected;
   if(ERR){b.innerHTML='<span>서버 연결 안 됨 · 재시도 중</span>';return}
   if(!hasJ){b.innerHTML=`<span style="white-space:normal">${esc(L&&L.diag?L.diag.message:'운행 로그 대기 중')}</span>`;return}
-  b.innerHTML=`<span style="white-space:normal">${stale?'마지막 운행 · ':''}<b>${esc(L.route||'')}</b> ${esc(L.direction||'')}${stale?'<br>'+esc(L.diag.message):''}</span><button onclick="openLive()">노선도</button>`;
+  b.innerHTML=`<span style="white-space:normal">${stale?'마지막 운행 · ':''}<b>${esc(L.route||'')}</b>${vehOf(L)?' '+esc(vehText(L)):''} ${esc(L.direction||'')} · 다음 ${esc(L.next_stop_display||'종점')}${!stale&&L.next_eta_min!=null?' · '+etaTx(L.next_eta_min):''}${stale?'<br>'+esc(L.diag.message):''}</span><button onclick="openLive()">노선도</button>`;
 }
 function openLive(){
   if(!LIVE||!LIVE.journey)return;
@@ -591,13 +573,10 @@ async function pollLive(){
       const k=j.journey.file+':'+j.journey.trip_no;
       if(st.auto!==k&&$('#s-region').classList.contains('on')){st.auto=k;openLive()}
     }
-    const vp=j.vehicle_profile||j.my_vehicle||{};
-    const vpPlate=vp.plate??vp.number??'';
-    const vpDoubleDeck=vp.double_deck??vp.double_decker??0;
-    const vpConfigured=vp.configured??!!vpPlate;
+    const vp=j.vehicle_profile||{};
     const key=JSON.stringify([j.connected,j.route,j.tour,j.current_index,j.next_index,j.journey&&j.journey.status,
       (j.stops||[]).map(s=>[s.eta_min,s.real,s.arr_real,s.dep_real].join(':')).join(),j.diag&&j.diag.code,
-      vpPlate,vp.low_floor,vpDoubleDeck,vpConfigured]);
+      vp.plate,vp.low_floor,vp.double_deck,vp.configured]);
     if(key!==lastKey){
       lastKey=key;
       if($('#s-map').classList.contains('on'))drawMap();
