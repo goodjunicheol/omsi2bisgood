@@ -172,7 +172,6 @@ input{font:inherit}
     <div class="k2" id="mSub"></div>
     <div class="kdr" id="mDir"></div>
   </div>
-  <div class="ks" id="lc"></div>
   <div class="kst"><i id="lgDot"></i><span id="lgTx">운행 로그 대기</span><span id="upd"></span></div>
   <div class="kse"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="sq" placeholder="정류장 검색" oninput="findStop()"></div>
   <div class="map" id="map"></div>
@@ -516,13 +515,12 @@ function trafficColor(s){
 function drawMap(){
   if(st.live&&curLive()&&curLive().journey)st.rt=liveRoute();
   const r=st.rt;if(!r)return;
-  const dr=r.dirs[st.dir]||r.dirs[0],stops=dr.stops||[],n=stops.length,L=curLive();
-  const pos=liveIdx(r,st.dir),has=pos!==null&&!!L&&!!L.journey;
-  const current=has?pos.current:null,next=has?pos.next:null,J=has?L.journey:null;
-  const atStop=!!J&&J.status==='at_stop',stale=has&&!L.connected,fin=!!J&&J.status==='finished';
+  const dr=r.dirs[st.dir]||r.dirs[0],stops=dr.stops||[],n=stops.length;
   const rc=routeColor(r);
   document.documentElement.style.setProperty('--rc',rc);
+  /* 이 노선·방향을 달리는 모든 버스(내 PC + 다른 플레이어). 특정 한 대의 정보는 화면에 두지 않고, 버스를 누르면 그 버스의 시트가 열린다 */
   const buses=busesOn(r,st.dir),byIdx={};
+  st.nbus=buses.length;
   buses.forEach(b=>{
     const p=b.pos;let i=p.current!==null?p.current:(p.next!==null?Math.max(0,p.next-1):null);
     if(i===null||i>=n||(p.current===null&&i===n-1))return;
@@ -533,7 +531,7 @@ function drawMap(){
   /* 헤더 */
   $('#mNo').textContent=r.no;$('#mNo').style.color=rc;
   const ty=$('#mTy');
-  ty.textContent=has?(stale?'마지막 운행 기록':(fin?'운행 종료':'실시간 운행')):'노선 정보';
+  ty.textContent=buses.length?`운행 중 ${buses.length}대`:'노선 정보';
   ty.style.background=rgba(rc,.12);ty.style.color=rc;
   $('#mSub').innerHTML=`<b>${esc(stops[0]?stops[0].display:'')}</b> ~ <b>${esc(stops[n-1]?stops[n-1].display:'')}</b> · 정류장 ${n}개<br>${esc(dr.trip)}`;
   /* 방향(투어)이 여러 개면 전환 버튼 대신 방향마다 버튼. 도착지가 같은 방향이 있으면 번호를 붙여 구분 */
@@ -541,42 +539,13 @@ function drawMap(){
   $('#mDir').innerHTML=r.dirs.map((d,k)=>`<button class="kdb${k===st.dir?' on':''}" onclick="setDir(${k})" title="${esc(d.trip||'')}">${esc(d.destination_display)} 방면${dn[d.destination_display]>1?`<small>${d.trip_index||k+1}</small>`:''}</button>`).join('');
   drawFav();
 
-  /* 운행 요약 카드 (단색) */
-  const lc=$('#lc');
-  if(has){
-    const nextName=next!==null?(stops[next]?.display||stops[next]?.name||''):'';
-    const currentName=current!==null?(stops[current]?.display||stops[current]?.name||''):'';
-    const w=next!==null?stops[next]?.row:null;
-    const eta=!stale&&next!==null?(w&&w.eta_min!=null?w.eta_min:L.next_eta_min):null;
-    lc.style.background=rgba(rc,.07);lc.style.borderColor=rgba(rc,.2);lc.className='ks on';
-    lc.innerHTML=`<div class="r1">${busLabel(L,r.no)}<span>${stale?'마지막 운행 기록 · '+Math.floor((L.age_sec||0)/60)+'분 전':(fin?'운행 종료':(atStop?'정차 중':(current===null?'출발 전':'운행 중')))}</span></div>
-      <div class="r2">${next!==null?'다음 '+esc(nextName)+(eta!=null?' · '+etaTx(eta):''):(fin?esc(currentName)+' 도착':esc((stops[0]&&stops[0].display)||''))}</div>
-      <div class="r3"><span>현재 <b>${esc(currentName||'출발 전')}</b></span><span>지연 <b>${esc(L.delay_text||'-')}</b></span>${L.next_eta_clock&&!stale&&next!==null?`<span>예정 <b>${esc(L.next_eta_clock)}</b></span>`:''}</div>`;
-  }else lc.className='ks';
-
-  /* 정류장 목록 */
+  /* 정류장 목록: 정류장 이름과 버스 아이콘만 (현재 위치·시간표·도착 예정 같은 한 대 기준 정보는 버스 시트에서) */
   let h='';
   stops.forEach((s,i)=>{
-    const first=i===0,last=i===n-1,w=s.row||null;
-    const done=current!==null&&i<current,nx=next!==null&&i===next,isCurrent=current!==null&&i===current;
+    const first=i===0,last=i===n-1;
     const traffic=trafficColor(stops[i+1]||s);
-    const seg=done?' done':'';
-    const actual=w?.real||w?.dep_real||w?.arr_real||'';
-    /* 오른쪽: 도착 예정(분, 몇 번째 전) / 이미 지난 정류장은 실제 시각 */
-    let right='';
-    if(has&&!stale&&next!==null&&i>=next&&i<next+8&&w&&w.eta_min!=null){
-      const ahead=i-(current!==null?current:next-1);
-      right=`<b class="${w.eta_min<=1?'soon':''}">${w.eta_min<=0?'곧 도착':w.eta_min+'분'}</b><small>${ahead>0?ahead+'번째 전':'다음'}</small>`;
-    }else if(has&&next!==null&&i>=next&&!stale&&!w&&i===next&&L.next_eta_min!=null){
-      right=`<b class="${L.next_eta_min<=1?'soon':''}">${L.next_eta_min<=0?'곧 도착':L.next_eta_min+'분'}</b><small>다음</small>`;
-    }else if(actual&&current!==null&&i<=current){
-      right=`<small>${esc(actual)}</small>`;
-    }else if(w&&w.plan){
-      right=`<small>${esc(w.plan)}</small>`;
-    }
-    const sub=w&&w.plan?`${w.plan}${actual?' → '+actual:''}${w.diff?' ('+w.diff+')':''}`:`${s.ko?s.name+' · ':''}${i+1}/${n}`;
-    const tags=(first?'<em class="tag">기점</em>':'')+(last?'<em class="tag">종점</em>':'')
-      +(nx?'<em class="tag nx">다음 정류장</em>':'')+(isCurrent?`<em class="tag cu">${atStop?'정차 중':'현재'}</em>`:'');
+    const sub=`${s.ko?s.name+' · ':''}${i+1}/${n}`;
+    const tags=(first?'<em class="tag">기점</em>':'')+(last?'<em class="tag">종점</em>':'');
     /* 버스 위치: 정차 중이면 정류장 위, 이동 중이면 현재~다음 정류장의 정확히 중간 */
     let bus='';
     const dup={};
@@ -585,36 +554,22 @@ function drawMap(){
       bus+=`<button class="bus${b.sel?' sel':''}${b.L.connected?'':' stale'}" style="top:calc(${b.mid?'30px + var(--H) * .5':'30px'} + ${off*42}px);--rc:${esc(bc)}" onclick="${b.sel?'openBus()':`selBus('${b.key}')`}" aria-label="버스 정보">
         ${busLabel(b.L,r.no)}<span class="bi">${BUS_SVG}</span></button>`;
     });
-    h+=`<div class="it${last?' last':''}${done?' done':''}${nx?' nx':''}" data-i="${i}" style="--traffic:${traffic}">
-      ${last?'':`<div class="ln${seg}"></div>`}
-      <div class="dot${first||last?' end':''}${done?' done':''}${nx?' nx':''}"></div>
-      <div class="sn"><b>${esc(s.display)}</b><span>${esc(sub)}</span><div class="tags">${tags}</div></div>
-      <div class="rt2">${right}</div>${bus}</div>`;
+    h+=`<div class="it${last?' last':''}" data-i="${i}" style="--traffic:${traffic}">
+      ${last?'':`<div class="ln"></div>`}
+      <div class="dot${first||last?' end':''}"></div>
+      <div class="sn"><b>${esc(s.display)}</b><span>${esc(sub)}</span><div class="tags">${tags}</div></div>${bus}</div>`;
   });
   $('#map').innerHTML=h;
   updStamp();
   if(st.bus)drawSheet();
-  /* 버스가 정류장을 지날 때 아이콘이 화면 밖이면 보이는 곳으로 */
-  const bk=has?`${current}:${next}:${atStop?1:0}`:null;
-  if(bk!==null&&bk!==st.lastBusKey)keepBusVisible();
-  st.lastBusKey=bk;
-}
-function keepBusVisible(){
-  requestAnimationFrame(()=>{
-    const e=document.querySelector('.bus.sel')||document.querySelector('.bus'),h=document.querySelector('.kh');if(!e||!h)return;
-    const b=e.getBoundingClientRect();
-    if(b.top<h.offsetHeight+10||b.bottom>window.innerHeight-90)e.scrollIntoView({block:'center',behavior:'smooth'});
-  });
 }
 function goBus(){const e=document.querySelector('.bus.sel')||document.querySelector('.bus');if(e)e.scrollIntoView({block:'center',behavior:'smooth'})}
 function updStamp(){
-  const d=new Date(),p=x=>String(x).padStart(2,'0'),L=curLive(),on=L&&L.connected&&L.journey;
+  const d=new Date(),p=v=>String(v).padStart(2,'0'),n=st.nbus||0,L=LIVE;
   $('#upd').textContent=`${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())} 갱신`;
-  $('#lgDot').className=on?'on':'';
-  $('#lgTx').textContent=on?`운행 로그 연결됨 · 지연 ${L.delay_text||'0'}`
-    :(L&&L.journey?`마지막 기록 ${Math.floor((L.age_sec||0)/60)}분 전`
-      :(L&&L.diag&&L.diag.level==='error'?'로그 오류 (첫 화면 안내 참고)':'운행 로그 대기'));
-  if(L&&L.static_snapshot&&L.journey&&L.pub_age!=null){const a=Math.round(L.pub_age);$('#lgTx').textContent+=` · 게시 ${a<90?a+'초':Math.floor(a/60)+'분'} 전`}
+  $('#lgDot').className=n?'on':'';
+  $('#lgTx').textContent=n?`운행 중인 버스 ${n}대`
+    :(ERR?'서버 연결 안 됨':(L&&L.diag&&L.diag.level==='error'?'로그 오류 (첫 화면 안내 참고)':'운행 중인 버스 없음'));
 }
 function findStop(){
   const q=$('#sq').value.trim().toLowerCase();
