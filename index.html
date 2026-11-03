@@ -72,7 +72,7 @@ input{font:inherit}
 .kst{display:flex;gap:6px;align-items:center;padding:9px 16px 4px;font-size:12px;color:#8a8f99}
 .kst i{display:inline-block;width:8px;height:8px;border-radius:4px;background:#c7ccd4}
 .kst i.on{background:var(--g)}
-.kst #upd{margin-left:auto}
+.kst #upd{margin-left:8px}
 .kse{display:flex;align-items:center;gap:8px;margin:6px 14px 0;padding:0 12px;height:40px;background:#f3f4f6;border-radius:10px}
 .kse svg{width:17px;height:17px;fill:none;stroke:#8a8f99;stroke-width:2;stroke-linecap:round;flex:none}
 .kse input{flex:1;border:0;outline:0;background:none;font-size:14.5px;min-width:0}
@@ -137,6 +137,9 @@ input{font:inherit}
 .bl .bs{font-weight:800}
 .bus .bl{position:absolute;right:100%;top:50%;transform:translateY(-50%);margin:0 8px 0 0;font-size:11.5px;padding:2px 5px;max-width:70px}
 .bus.sel .bl{border-color:#8a919c}
+.aitg{flex:none;border:1px solid #dfe2e6;border-radius:15px;padding:4px 11px;font-size:12px;font-weight:700;background:#fff;color:#6b7380}
+.aitg.on{background:#2b6fe0;border-color:#2b6fe0;color:#fff}
+.aibar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 16px 8px;font-size:12.5px;color:var(--sub);background:#fff}
 .rlist{padding:12px 16px 0}
 .rl-t{font-size:13px;font-weight:700;color:var(--sub);margin:0 0 6px 2px}
 .rl-i{display:flex;align-items:center;gap:10px;width:100%;background:#fff;border:1px solid var(--ln);border-radius:12px;padding:12px 12px;margin-bottom:8px;text-align:left}
@@ -149,6 +152,7 @@ input{font:inherit}
 
 <section class="scr on" id="s-region">
   <div class="hero"><h1>버스 실시간 정보</h1><p>운행 지역(HOF)을 선택하세요</p><div class="lbn" id="liveBn"></div><div class="apiset" id="apiSet"></div></div>
+  <div class="aibar"><span id="aiInfo">AI 버스 보기</span><button class="aitg" onclick="toggleAi()"></button></div>
   <div class="rlist" id="rlist"></div>
   <div class="grid" id="regions"></div>
 </section>
@@ -172,7 +176,7 @@ input{font:inherit}
     <div class="k2" id="mSub"></div>
     <div class="kdr" id="mDir"></div>
   </div>
-  <div class="kst"><i id="lgDot"></i><span id="lgTx">운행 로그 대기</span><span id="upd"></span></div>
+  <div class="kst"><i id="lgDot"></i><span id="lgTx">운행 로그 대기</span><button class="aitg" onclick="toggleAi()" style="margin-left:auto"></button><span id="upd" style="margin-left:8px"></span></div>
   <div class="kse"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="sq" placeholder="정류장 검색" oninput="findStop()"></div>
   <div class="map" id="map"></div>
   <button class="kfab" onclick="goBus()" aria-label="버스 위치로"><svg viewBox="0 0 24 24"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm8.94 3A9 9 0 0 0 13 3.06V1h-2v2.06A9 9 0 0 0 3.06 11H1v2h2.06A9 9 0 0 0 11 20.94V23h2v-2.06A9 9 0 0 0 20.94 13H23v-2h-2.06zM12 19a7 7 0 1 1 0-14 7 7 0 0 1 0 14z"/></svg></button>
@@ -229,8 +233,28 @@ const rgbOf=c=>{const m=/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(c||''
 const rgba=(c,a)=>`rgba(${rgbOf(c).join(',')},${a})`;
 
 let DATA=[],LIVE=null,REV=null,ERR=false,lastKey='';
-let RUNS=[],VIEW=null,VIEW_KEY=null,VIEW_REMOTE=false;
+let RUNS=[],RAW_RUNS=[],VIEW=null,VIEW_KEY=null,VIEW_REMOTE=false;
 function curLive(){return (VIEW_REMOTE&&VIEW&&$('#s-map')&&$('#s-map').classList.contains('on'))?VIEW:LIVE}
+/* AI 버스 보기 ON/OFF (이 브라우저에 저장, 기본 ON) */
+let AI_ON=(()=>{try{return localStorage.getItem('bis_ai')!=='0'}catch(e){return true}})();
+function applyRuns(){RUNS=RAW_RUNS.filter(x=>AI_ON||!x.ai)}
+let AI_META=null;
+function drawAiInfo(){
+  const e=$('#aiInfo');if(!e)return;
+  const r=AI_META&&AI_META.real,n=RAW_RUNS.filter(x=>x.ai).length;
+  e.textContent='AI 버스 보기'+(AI_META&&AI_META.enabled?(AI_META.source==='real'&&r?` · 게임에서 ${r.seen}대 감지 · ${n}대 표시`:` · ${n}대 운행(가상)`):' · 서버에서 꺼짐');
+}
+function drawAi(){document.querySelectorAll('.aitg').forEach(b=>{b.textContent='AI 버스 '+(AI_ON?'ON':'OFF');b.classList.toggle('on',AI_ON)});drawAiInfo()}
+function toggleAi(){
+  AI_ON=!AI_ON;try{localStorage.setItem('bis_ai',AI_ON?'1':'0')}catch(e){}
+  applyRuns();
+  if(!AI_ON&&VIEW_REMOTE&&String(VIEW_KEY||'').startsWith('ai-')){   // 보고 있던 AI 버스 노선도에서 나가기
+    VIEW=null;VIEW_KEY=null;VIEW_REMOTE=false;st.live=false;st.rt=null;st.bus=false;
+    stack.length=0;stack.push('s-region');show('s-region',false);
+  }
+  drawAi();drawRunList();lastKey='';
+  if($('#s-map').classList.contains('on'))drawMap();
+}
 const st={rg:null,rt:null,dir:0,bus:false,live:false,auto:null,sticky:null,lastBusKey:null};
 const stack=['s-region'];
 
@@ -644,7 +668,7 @@ async function pollLive(){
   try{
     const j=adjustStatic(await jget('/api/live')),wasErr=ERR;
     ERR=false;LIVE=j;
-    try{const rr=await jget('/api/relay/runs');RUNS=(rr&&rr.runs)||[];}catch(e){}
+    try{const rr=await jget('/api/relay/runs');RAW_RUNS=(rr&&rr.runs)||[];AI_META=(rr&&rr.ai)||null;applyRuns();drawAiInfo();}catch(e){}
     if(VIEW_REMOTE&&VIEW_KEY){
       const cur=RUNS.find(x=>x.run_key===VIEW_KEY);
       if(cur){VIEW=toLive(cur)}else if(VIEW){VIEW.connected=false;VIEW.diag={code:'gone',level:'warn',message:'이 운행의 새 정보가 더 이상 오지 않습니다'}}
@@ -658,7 +682,7 @@ async function pollLive(){
       if(st.auto!==k&&$('#s-region').classList.contains('on')){st.auto=k;openLive()}
     }
     const vp=vehOf(j)||{};
-    const key=JSON.stringify([j.connected,j.route,j.tour,j.current_index,j.next_index,j.journey&&j.journey.status,
+    const key=JSON.stringify([AI_ON,j.connected,j.route,j.tour,j.current_index,j.next_index,j.journey&&j.journey.status,
       (j.stops||[]).map(s=>[s.eta_min,s.real,s.arr_real,s.dep_real].join(':')).join(),j.diag&&j.diag.code,
       vp.plate,vp.low_floor,vp.double_deck,vp.configured,paxKey(j),
       RUNS.map(q=>[q.run_key,q.current_index,q.next_index,q.status,q.vehicle&&q.vehicle.plate,paxKey(q)])]);
@@ -684,6 +708,7 @@ async function loop(){
   setTimeout(loop,ERR?Math.min(30000,pollMs*Math.pow(2,Math.min(fails,4))):pollMs);
 }
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)pollLive()});
+drawAi();
 loadRoutes().then(()=>{drawBanner();loop()});
 </script>
 </body>
