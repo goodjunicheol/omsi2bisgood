@@ -551,7 +551,7 @@ function looseList(){
     const v={vehicle_profile:{configured:true,plate:x.vehicle&&x.vehicle.plate,low_floor:false,double_deck:false},passengers:x.passengers};
     const hof=(x.hof_routes||[]).length?' · HOF '+x.hof_routes.join(', '):'';
     return `<div class="rl-x"><span class="rl-no">${esc(x.line||'?')}</span>
-      <span class="rl-m"><b>${x.speed!=null?esc(x.speed)+'km/h':'속도 정보 없음'}${esc(hof)}</b><small>${esc(x.reason||'')}</small></span>
+      <span class="rl-m"><b>${x.near&&x.near[0]?esc(x.near[0].name)+' 근처 '+esc(x.near[0].m)+'m':(x.speed!=null?esc(x.speed)+'km/h':'위치 정보 없음')}</b><small>${x.speed!=null&&x.near&&x.near[0]?esc(x.speed)+'km/h · ':''}${esc(x.reason||'')}${esc(hof)}</small></span>
       ${busLabel(v,x.line||'')}</div>`;
   }).join('');
 }
