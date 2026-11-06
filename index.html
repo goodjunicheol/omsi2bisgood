@@ -460,7 +460,7 @@ button.card:active{background:#f9fafb}
         <span class="now"><em>ON</em><span id="wyNow"></span></span>
         <select id="wySort" onchange="W.sort=this.value;wyDraw()"><option value="best">최적 경로순</option><option value="time">최소 시간순</option><option value="xfer">최소 환승순</option></select>
       </div>
-      <div id="wyList"><div class="wy-empty">출발지와 도착지 정류장을 입력하세요.<br>바로 가는 버스와 1번 갈아타는 경로를 찾아 드립니다.</div></div>
+      <div id="wyList"><div class="wy-empty">출발지와 도착지 정류장을 입력하세요.<br>갈아타는 횟수에 상관없이 갈 수 있는 경로를 찾아 드립니다.</div></div>
     </div>
     <div class="wy-r" id="wyR"></div>
   </div>
@@ -1379,7 +1379,7 @@ function gShowStop(s){
 })();
 
 /* ═════════════════════ 길찾기 ═════════════════════
-   출발·도착 정류장 → 바로 가는 버스 + 1번 갈아타는 경로.
+   출발·도착 정류장 → 갈아타는 횟수 제한 없이 가능한 경로 (환승 횟수별 가장 빠른 길 + 다른 노선 대안).
    소요 시간: 정류장 좌표가 있으면 거리 ÷ 25km/h + 정차 20초, 없으면 정류장 사이 1분 30초로 추정.
    실시간 도착: 그 노선을 달리는 버스(내 버스 · 멀티플레이 · AI)가 승차 정류장까지 몇 정류장 남았는지. */
 const W={o:null,d:null,res:[],tab:'all',sort:'best',sel:null,focus:null,sug:[],ki:-1,open:{},at:0};
@@ -1467,59 +1467,115 @@ function wySeg(d,i){
 }
 function wyRide(d,a,b){let t=0;for(let i=a;i<b;i++)t+=wySeg(d,i);return t}
 /* ── 경로 찾기 ── */
+/* ── 경로 찾기: 갈아타는 횟수 제한 없음 (RAPTOR 방식) ──
+   1회차 = 버스 1대로 갈 수 있는 정류장, 2회차 = 2대로 …  더 빨리 갈 수 있는 정류장이 없을 때까지 넓혀 간다.
+   갈아탈 때: 같은 정류장(반대편 포함) 또는 300m 안 정류장으로 걸어서, 갈아타는 데 1분을 더한다. */
+const WY_XFER=60,WY_MAXK=12;
+function wyNet(R){
+  /* 지역별 노선 방향 목록과 '걸어서 갈아탈 수 있는 정류장' 표 (좌표가 바뀌면 다시 만듦) */
+  const key=DATA.indexOf(R)+'|'+(G.geo?G.geo.ver:'-');
+  if(W.net&&W.net.key===key&&W.net.R===R)return W.net;
+  const dirs=[];R.routes.forEach((r,ri)=>r.dirs.forEach((d,k)=>dirs.push({r,ri,k,d})));
+  const byStop=new Map();
+  dirs.forEach(x=>x.d.stops.forEach((s,i)=>{(byStop.get(s.name)||byStop.set(s.name,[]).get(s.name)).push({x,i})}));
+  const names=[...byStop.keys()],gk=n=>stopKey(baseName(n)),byG=new Map();
+  names.forEach(n=>{(byG.get(gk(n))||byG.set(gk(n),[]).get(gk(n))).push(n)});
+  const foot=new Map();
+  names.forEach(n=>{
+    const out=[],a=wyXY(n);
+    (byG.get(gk(n))||[]).forEach(m=>{if(m===n)return;const b=wyXY(m);out.push({m,dist:a&&b?Math.min(300,Math.hypot(a.x-b.x,a.y-b.y)):30})});
+    if(a)names.forEach(m=>{if(m===n||gk(m)===gk(n))return;const b=wyXY(m);if(b){const dd=Math.hypot(a.x-b.x,a.y-b.y);if(dd<=300)out.push({m,dist:dd})}});
+    foot.set(n,out);
+  });
+  W.net={key,R,dirs,byStop,foot};
+  return W.net;
+}
+function wyRaptor(net,O,D,ban){
+  const INF=1e15,best=new Map(),L=[new Map()],RL=[new Map()];   /* L: 정류장별 가장 빠른 기록, RL: 그중 버스로 도착한 기록 */
+  const bestOf=n=>best.has(n)?best.get(n):INF;
+  let marked=new Set();
+  O.forEach(n=>{if(!net.byStop.has(n))return;L[0].set(n,{t:0,via:'start'});best.set(n,0);marked.add(n)});
+  const destBest=()=>{let m=INF;D.forEach(n=>{m=Math.min(m,bestOf(n))});return m};
+  for(let k=1;k<=WY_MAXK&&marked.size;k++){
+    const prev=L[k-1],cur=new Map(),rides=new Map(),newly=new Set();L.push(cur);RL.push(rides);
+    /* 이번 회차에 탈 수 있는 노선 방향과, 그 방향에서 가장 앞에서 탈 수 있는 정류장 */
+    const q=new Map();
+    marked.forEach(n=>(net.byStop.get(n)||[]).forEach(({x,i})=>{if(ban&&ban.has(x.r))return;const v=q.get(x);if(v==null||i<v)q.set(x,i)}));
+    const cap=destBest();
+    q.forEach((i0,x)=>{
+      const st=x.d.stops;let bi=-1,tb=0;
+      for(let i=i0;i<st.length;i++){
+        const n=st[i].name;
+        if(bi>=0){
+          tb+=wySeg(x.d,i-1);
+          if(tb<bestOf(n)&&tb<cap){const lb={t:tb,via:'ride',x,bi,i};cur.set(n,lb);rides.set(n,lb);best.set(n,tb);newly.add(n)}
+        }
+        const pl=prev.get(n);
+        if(pl){const tt=pl.t+(k>1?WY_XFER:0);if(bi<0||tt<tb){bi=i;tb=tt}}
+      }
+    });
+    /* 내려서 걸어갈 수 있는 정류장 */
+    const walked=new Set();
+    newly.forEach(n=>{
+      const lb=rides.get(n);
+      (net.foot.get(n)||[]).forEach(({m,dist})=>{
+        const tt=lb.t+dist/1.2;
+        if(tt<bestOf(m)&&tt<cap){cur.set(m,{t:tt,via:'walk',from:n,dist});best.set(m,tt);walked.add(m)}
+      });
+    });
+    marked=new Set([...newly,...walked]);
+  }
+  /* 회차마다 도착 정류장에 더 빨리 닿았으면 그 경로 하나 (= 환승 횟수별로 가장 빠른 경로) */
+  const out=[];let last=INF;
+  for(let k=1;k<L.length;k++){
+    let bn=null,bt=INF;D.forEach(n=>{const lb=L[k].get(n);if(lb&&lb.t<bt){bt=lb.t;bn=n}});
+    if(bn==null||bt>=last)continue;
+    const c=wyBack(L,RL,k,bn);if(c){out.push(c);last=bt}
+  }
+  return out;
+}
+function wyBack(L,RL,k,n){
+  /* 도착 정류장에서 거꾸로: 버스 구간 ← (걸어서 갈아타기) ← 버스 구간 … ← 출발 */
+  const legs=[],walks=[];let tail=null,pend=null,needRide=false;
+  while(k>0){
+    let lb=needRide?RL[k].get(n):L[k].get(n);needRide=false;
+    if(!lb)return null;
+    if(lb.via==='walk'){pend={m:Math.round(lb.dist),sec:lb.dist/1.2};n=lb.from;lb=RL[k].get(n);if(!lb)return null}
+    if(lb.via!=='ride')return null;
+    if(pend){if(!legs.length)tail=pend;else walks.unshift(pend);pend=null}
+    else if(legs.length)walks.unshift({m:0,sec:0});
+    legs.unshift({...lb.x,from:lb.bi,to:lb.i,sec:wyRide(lb.x.d,lb.bi,lb.i)});
+    n=lb.x.d.stops[lb.bi].name;k--;
+    const pl=L[k].get(n);
+    if(pl&&pl.via==='walk'&&k>0){pend={m:Math.round(pl.dist),sec:pl.dist/1.2};n=pl.from;needRide=true}
+  }
+  while(walks.length>legs.length-1)walks.shift();
+  while(walks.length<legs.length-1)walks.push({m:0,sec:0});
+  const total=legs.reduce((a,l)=>a+l.sec,0)+walks.reduce((a,w)=>a+w.sec+WY_XFER,0)+(tail?tail.sec:0);
+  return {legs,walks,tail,total,xfer:legs.length-1};
+}
 function wySearch(){
   W.sel=null;$('#wyR').classList.remove('on');
   const o=W.o,d=W.d;
   if(!o||!d)return;
   if(o.key===d.key){W.res=[];$('#wyList').innerHTML='<div class="wy-empty">출발지와 도착지가 같습니다.</div>';wyDrawTabs();return}
   if(o.gi!==d.gi){W.res=[];$('#wyList').innerHTML=`<div class="wy-empty">출발지(${esc(o.region)})와 도착지(${esc(d.region)})가 다른 지역입니다.</div>`;wyDrawTabs();return}
-  const R=DATA[o.gi],O=o.names,D=d.names;
-  const dirs=[];R.routes.forEach((r,ri)=>r.dirs.forEach((dd,k)=>dirs.push({r,ri,k,d:dd})));
-  const res=[],best=new Map();
-  const add=c=>{const id=c.legs.map(l=>l.r.no+'#'+l.k).join('>');const p=best.get(id);if(!p||c.total<p.total)best.set(id,c)};
-  const gkey=n=>stopKey(baseName(n));
-  /* 1) 바로 가기 */
-  dirs.forEach(x=>{
-    const s=x.d.stops;
-    for(let j=1;j<s.length;j++){
-      if(!D.has(s[j].name))continue;
-      for(let i=j-1;i>=0;i--){if(O.has(s[i].name)){const t=wyRide(x.d,i,j);add({legs:[{...x,from:i,to:j,sec:t}],walks:[],total:t,xfer:0});break}}
-    }
-  });
-  /* 2) 한 번 갈아타기: 같은 정류장(반대편 포함) 또는 300m 안 */
-  const byKey=new Map();
-  dirs.forEach(x=>x.d.stops.forEach((s,m)=>{const k=gkey(s.name);(byKey.get(k)||byKey.set(k,[]).get(k)).push({x,m})}));
-  const lastD=new Map();dirs.forEach(x=>{let b=-1;x.d.stops.forEach((s,j)=>{if(D.has(s.name))b=j});lastD.set(x,b)});
-  const near=(n1,n2)=>{const a=wyXY(n1),b=wyXY(n2);return a&&b?Math.hypot(a.x-b.x,a.y-b.y):null};
-  const allStops=[...new Set(dirs.flatMap(x=>x.d.stops.map(s=>s.name)))];
-  const nearCache=new Map();
-  const nearList=n=>{
-    if(nearCache.has(n))return nearCache.get(n);
-    const a=wyXY(n),out=[];
-    if(a)allStops.forEach(m=>{if(gkey(m)===gkey(n))return;const b=wyXY(m);if(b){const dd=Math.hypot(a.x-b.x,a.y-b.y);if(dd<=300)out.push({m,dd})}});
-    nearCache.set(n,out);return out;
+  const net=wyNet(DATA[o.gi]),found=new Map();
+  const add=c=>{const id=c.legs.map(l=>l.r.no+'#'+l.k+'@'+l.from+'-'+l.to).join('>');if(!found.has(id))found.set(id,c)};
+  const base=wyRaptor(net,o.names,d.names,null);base.forEach(add);
+  /* 다른 경로도 보여 주기: 찾은 경로에 쓰인 노선을 하나씩 빼고 다시 찾음 (2단계까지) */
+  const tried=new Set();let runs=0;
+  const explore=(list,depth,ban)=>{
+    list.forEach(c=>c.legs.forEach(l=>{
+      if(runs>=40)return;
+      const b2=new Set(ban);b2.add(l.r);const sig=[...b2].map(r=>r.no).sort().join(',');
+      if(tried.has(sig))return;tried.add(sig);runs++;
+      const more=wyRaptor(net,o.names,d.names,b2);more.forEach(add);
+      if(depth<2)explore(more,depth+1,b2);
+    }));
   };
-  dirs.forEach(A=>{
-    const s=A.d.stops;
-    for(let i=0;i<s.length-1;i++){
-      if(!O.has(s[i].name))continue;
-      if(i+1<s.length&&O.has(s[i+1].name))continue;           // 더 가까운 출발 정류장이 바로 뒤에 있으면 그쪽에서
-      for(let t=i+1;t<s.length;t++){
-        if(D.has(s[t].name))break;                              // 이미 도착 → 바로 가기로 충분
-        const cand=[...(byKey.get(gkey(s[t].name))||[]).map(o2=>({...o2,walk:s[t].name===o2.x.d.stops[o2.m].name?0:(near(s[t].name,o2.x.d.stops[o2.m].name)??60)}))];
-        nearList(s[t].name).forEach(nb=>(byKey.get(gkey(nb.m))||[]).forEach(o2=>{if(o2.x.d.stops[o2.m].name===nb.m)cand.push({...o2,walk:nb.dd})}));
-        cand.forEach(({x:B,m,walk})=>{
-          if(B.r===A.r)return;
-          const n=lastD.get(B);if(n<=m)return;
-          let n2=-1;for(let j=m+1;j<B.d.stops.length;j++)if(D.has(B.d.stops[j].name)){n2=j;break}
-          if(n2<0)return;
-          const t1=wyRide(A.d,i,t),t2=wyRide(B.d,m,n2),tw=walk/1.2;
-          add({legs:[{...A,from:i,to:t,sec:t1},{...B,from:m,to:n2,sec:t2}],walks:[{m:Math.round(walk),sec:tw}],total:t1+t2+tw+60,xfer:1});
-        });
-      }
-    }
-  });
-  W.res=[...best.values()].sort((a,b)=>a.total-b.total).slice(0,40);
+  explore(base,1,new Set());
+  W.res=[...found.values()].sort((a,b)=>a.total-b.total).slice(0,30);
   W.tab='all';W.at=Date.now();wyDraw();
 }
 /* ── 실시간 도착: 이 노선을 달리는 버스가 승차 정류장까지 ── */
@@ -1547,6 +1603,7 @@ function wyPlan(c){
     const st=t;t+=l.sec*1000;steps.push({l,st,en:t});
     if(c.walks[i]){t+=(c.walks[i].sec+60)*1000}
   });
+  if(c.tail)t+=c.tail.sec*1000;
   return {now,wait0,arrive:t,steps,arr0:a0};
 }
 function wyFiltered(){
@@ -1564,6 +1621,7 @@ function wyBar(c,plan){
   const segs=[];
   if(plan.wait0>0)segs.push({t:'walk',sec:plan.wait0,lbl:wyMin(plan.wait0)+'분'});
   c.legs.forEach((l,i)=>{segs.push({t:'bus',sec:l.sec,lbl:wyMin(l.sec)+'분',col:routeColor(l.r)});if(c.walks[i])segs.push({t:'walk',sec:c.walks[i].sec+60,lbl:wyMin(c.walks[i].sec+60)+'분'})});
+  if(c.tail)segs.push({t:'walk',sec:c.tail.sec,lbl:wyMin(c.tail.sec)+'분'});
   const tot=segs.reduce((a,s)=>a+s.sec,0)||1;
   return `<div class="wbar">${segs.map(s=>`<div class="wseg w${s.t}" style="flex:${(s.sec/tot).toFixed(3)} 1 0;${s.t==='bus'?'background:'+s.col:''}">${esc(s.lbl)}</div>`).join('')}</div>`;
 }
@@ -1575,7 +1633,7 @@ function wyArrHtml(arr,leg){
 function wyDraw(){
   wyDrawTabs();
   if(!W.res.length){
-    if(W.o&&W.d&&W.at)$('#wyList').innerHTML='<div class="wy-empty">이 두 정류장을 잇는 버스 경로를 찾지 못했습니다.<br>(바로 가는 버스와 1번 갈아타는 경로까지 찾습니다)</div>';
+    if(W.o&&W.d&&W.at)$('#wyList').innerHTML='<div class="wy-empty">이 두 정류장을 잇는 버스 경로를 찾지 못했습니다.<br>(몇 번을 갈아타도 닿지 않는 경우입니다)</div>';
     return;
   }
   const L=wyFiltered();
@@ -1588,7 +1646,7 @@ function wyDraw(){
       const arr=j===0?p.arr0:wyArr(l);
       return `<div class="wl"><div class="wl-k" style="color:${routeColor(l.r)}">${BUS_IC}${esc(l.r.no)}</div>
         <div class="wl-v"><b>${esc(l.d.stops[l.from].display)}</b>${wyArrHtml(arr,l)}</div></div>`
-        +(c.walks[j]?`<div class="wl"><div class="wl-k off">환승</div><div class="wl-v"><b>${esc(c.legs[j+1].d.stops[c.legs[j+1].from].display)}</b>${c.walks[j].m?`<span class="wa wa-s">도보 ${c.walks[j].m}m</span>`:''}</div></div>`:'');
+        +(c.walks[j]&&c.legs[j+1]?`<div class="wl"><div class="wl-k off">환승</div><div class="wl-v"><b>${esc(l.d.stops[l.to].display)}${l.d.stops[l.to].name!==c.legs[j+1].d.stops[c.legs[j+1].from].name?' → '+esc(c.legs[j+1].d.stops[c.legs[j+1].from].display):''}</b>${c.walks[j].m?`<span class="wa wa-s">도보 ${c.walks[j].m}m</span>`:''}</div></div>`:'');
     }).join('');
     const lst=c.legs[c.legs.length-1];
     return `<div class="wr ${W.sel===c?'on':''}" onclick="wySel(${i})">
@@ -1596,7 +1654,7 @@ function wyDraw(){
       <div class="wr-h"><b>${wyMin((p.arrive-p.now)/1000)}<small>분</small></b><i></i><span>${esc(wyClock(p.arrive))} 도착</span><i></i><span>환승 ${c.xfer}회</span></div>
       ${wyBar(c,p)}
       ${rows}
-      <div class="wl"><div class="wl-k off">○ 하차</div><div class="wl-v"><b>${esc(lst.d.stops[lst.to].display)}</b></div></div>
+      <div class="wl"><div class="wl-k off">○ 하차</div><div class="wl-v"><b>${esc(lst.d.stops[lst.to].display)}</b>${c.tail&&c.tail.m?`<span class="wa wa-s">도보 ${c.tail.m}m</span>`:''}</div></div>
       <div class="wr-more">상세보기 ›</div></div>`;
   }).join('')||'<div class="wy-empty">이 조건에 맞는 경로가 없습니다.</div>';
   if(W.sel&&$('#wyR').classList.contains('on'))wyDetail();
@@ -1623,13 +1681,13 @@ function wyDetail(){
     const w=c.walks[j],last=j===p.steps.length-1;
     tl+=`<div class="wt" style="--lc:${rc}"><div class="wt-t">${esc(wyClock(s.en))}</div><div class="wt-m ${last||w?'wdash':''}" style="--lc:${rc}"><div class="wring"></div></div>
       <div class="wt-c"><b>${esc(l.d.stops[l.to].display)} 하차</b><small>${esc(l.d.stops[l.to].name)}</small>
-      ${w?`<div class="wmv">${w.m?'도보 '+w.m+'m · ':''}환승 약 ${wyMin(w.sec+60)}분</div>`:''}</div></div>`;
+      ${w?`<div class="wmv">${w.m?'도보 '+w.m+'m · ':''}환승 약 ${wyMin(w.sec+60)}분</div>`:''}${last&&c.tail&&c.tail.m?`<div class="wmv">도보 ${c.tail.m}m · 약 ${wyMin(c.tail.sec)}분</div>`:''}</div></div>`;
   });
   tl+=`<div class="wt last"><div class="wt-t">${esc(wyClock(p.arrive))}</div><div class="wt-m wdash"><div class="wpin we"><span>도착</span></div></div><div class="wt-c"><b>${esc(d.name)}</b><small>${esc(d.region)}</small></div></div>`;
   $('#wyR').innerHTML=`<div class="wd-h"><button class="wd-x" onclick="wyCloseD()" aria-label="닫기">✕</button>
-      <div class="wr-tag">${c.xfer?'환승 1회':'바로 가기'}</div>
+      <div class="wr-tag">${c.xfer?'환승 '+c.xfer+'회':'바로 가기'}</div>
       <div class="wr-h"><b>${wyMin((p.arrive-p.now)/1000)}<small>분</small></b><i></i><span>${esc(wyClock(p.arrive))} 도착</span></div>
-      <div class="wd-sub">환승 ${c.xfer}회${c.walks.length&&c.walks[0].m?` · 도보 ${c.walks[0].m}m`:''}${p.wait0?` · 대기 ${wyMin(p.wait0)}분`:''}</div>
+      <div class="wd-sub">${[(()=>{const m=c.walks.reduce((a,w)=>a+(w.m||0),0)+(c.tail?c.tail.m:0);return m?`도보 ${m}m`:''})(),p.wait0?`대기 ${wyMin(p.wait0)}분`:''].filter(Boolean).join(' · ')}</div>
       ${wyBar(c,p)}</div>
     <div class="wtl">${tl}</div>`;
 }
