@@ -625,7 +625,7 @@ function vehOf(L){
 }
 /* ---------- 승객 정보 (서버 /api/live 의 passengers) ----------
    받지 못한 값은 숫자를 만들지 않고 '데이터 없음' / '미지원' 으로 표시한다.
-   시내버스: 탑승·착석·입석 + 혼잡도(여유 ≤25 / 보통 ≤45 / 혼잡 46~)  ·  직행좌석버스: 총 좌석 중 잔여 좌석 */
+   시내버스: 탑승·착석·입석 + 혼잡도 (최대 인원 설정 시 40%/70% 기준, 미설정 시 25명/45명 기준)  ·  직행좌석버스: 총 좌석 중 잔여 좌석 */
 function paxRows(L){
   const P=L&&L.passengers,N=v=>v==null?'<b class="mut">데이터 없음</b>':`<b>${v}명</b>`;
   if(!P)return `<div class="w"><span>승객 정보</span><b class="mut">데이터 없음</b></div>`;
@@ -641,9 +641,10 @@ function paxRows(L){
   if(!P.available)return `<div class="w"><span>승객 정보</span><b class="mut">데이터 없음${P.reason?' · '+esc(P.reason):''}</b></div>`;
   return `<div><span>탑승 인원</span>${N(P.total)}</div><div><span>착석 인원</span>${N(P.seated)}</div>
     <div><span>입석 인원</span>${N(P.standing)}</div>
-    <div><span>혼잡도</span>${P.congestion==null?'<b class="mut">데이터 없음</b>':`<b class="cg${P.congestion_level}">${esc(P.congestion)}</b>`}</div>`;
+    <div><span>혼잡도</span>${P.congestion==null?'<b class="mut">데이터 없음</b>':`<b class="cg${P.congestion_level}">${esc(P.congestion)}${P.load_pct!=null?` · ${esc(P.load_pct)}%`:''}</b>`}</div>`
+    +(P.capacity?`<div class="w"><span>최대 인원</span><b>${esc(P.capacity)}명</b></div>`:'');
 }
-function paxKey(j){const P=j&&j.passengers;return P?[P.available,P.kind,P.total,P.seated,P.standing,P.congestion,P.seats_total,P.seats_left,P.reason]:null}
+function paxKey(j){const P=j&&j.passengers;return P?[P.available,P.kind,P.total,P.seated,P.standing,P.congestion,P.seats_total,P.seats_left,P.capacity,P.load_pct,P.reason]:null}
 /* 말풍선: 1줄 = 차량번호 + 상태(시내버스 여유/보통/혼잡 · 직행좌석 잔여 N석), 2줄 = 저상/2층. 상태 데이터가 없으면 상태는 생략(숫자를 만들지 않음) */
 const CG_COL=['#1565d8','#1a9b4b','#e0392f'];
 function paxTag(L){
