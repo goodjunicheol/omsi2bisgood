@@ -222,6 +222,141 @@ button.card:active{background:#f9fafb}
 #tab-live .rl-x{background:#fafbfc;border:1px dashed #e5e8eb}
 #tab-live .rl-no{font-size:22px}
 #s-region .apiset{margin:0 0 12px;background:#fff;border-radius:16px;padding:12px 14px}
+/* ───────── 홈: 바로가기 (길찾기 · 초정밀버스) ───────── */
+.qa2{display:flex;gap:10px;padding:14px}
+.qa2 button{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px 4px;border-radius:16px}
+.qa2 button:active{background:#f2f4f6}
+.qa2 i{width:52px;height:52px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-style:normal}
+.qa2 i svg{width:28px;height:28px}
+.qa2 b{font-size:14.5px;color:#191f28}
+/* ───────── 초정밀버스 지도 ───────── */
+.scr.full{max-width:none}
+#s-geo{height:100vh;height:100dvh;min-height:0;display:none;flex-direction:column;background:#e9edf1}
+#s-geo.on{display:flex}
+.gh{flex:none;display:flex;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top,0px) + 8px) 10px 8px;background:#fff;border-bottom:1px solid var(--ln);z-index:5}
+.gt{flex:1;min-width:0}
+.gt b{display:block;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gt small{display:block;font-size:12px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gwrap{position:relative;flex:1;min-height:0;overflow:hidden;touch-action:none}
+#gcv{position:absolute;inset:0;width:100%;height:100%;cursor:grab}
+#gcv.drag{cursor:grabbing}
+.gzoom{position:absolute;right:12px;top:12px;display:flex;flex-direction:column;background:#fff;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.15);overflow:hidden}
+.gzoom button{width:42px;height:42px;font-size:20px;font-weight:700;color:#333;border-bottom:1px solid var(--ln)}
+.gzoom button:last-child{border-bottom:0}
+.gzoom button svg{width:20px;height:20px;fill:none;stroke:#333;stroke-width:2;stroke-linecap:round;vertical-align:middle}
+.glegend{position:absolute;left:12px;top:12px;display:flex;flex-wrap:wrap;gap:6px;max-width:calc(100% - 80px)}
+.glegend span{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.94);border-radius:8px;padding:4px 8px;font-size:12px;font-weight:700;color:#4e5968;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.glegend i{width:10px;height:10px;border-radius:3px}
+.gempty{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(320px,calc(100% - 32px));background:#fff;border-radius:18px;padding:20px;text-align:center;font-size:14px;line-height:1.6;color:var(--sub);box-shadow:0 4px 20px rgba(0,0,0,.12);display:none}
+.gcard{position:absolute;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);max-width:420px;margin:0 auto;background:#fff;border-radius:18px;padding:16px;box-shadow:0 6px 24px rgba(0,0,0,.18);display:none}
+.gcard.on{display:block;animation:f .15s ease-out}
+.gcard .x{position:absolute;right:10px;top:10px;width:30px;height:30px;border-radius:15px;background:#f2f4f6;color:#6b7684}
+.gc-h{display:flex;align-items:center;gap:10px;padding-right:36px}
+.gc-no{font-size:24px;font-weight:800}
+.gc-s{font-size:13.5px;color:var(--sub);margin-top:6px;line-height:1.5}
+.gc-b{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.gc-b button{flex:1;min-width:120px;height:42px;border-radius:12px;background:#3182f6;color:#fff;font-weight:700;font-size:14px}
+.gc-b button.g2{background:#f2f4f6;color:#333}
+.gc-r{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.gc-r button{font-size:13px;font-weight:800;border-radius:8px;padding:6px 10px}
+/* ───────── 길찾기 ───────── */
+.scr.wide{max-width:1080px}
+#s-way{background:#fff}
+.wy{display:flex;align-items:stretch;min-height:100vh}
+.wy-l{width:100%;max-width:420px;flex:none;border-right:1px solid var(--ln);background:#fff}
+.wy-top{padding:calc(env(safe-area-inset-top,0px) + 10px) 14px 12px;border-bottom:1px solid var(--ln);position:relative}
+.wy-bar{display:flex;align-items:center;gap:6px;margin-bottom:10px}
+.wy-bar h1{font-size:18px;margin:0}
+.wy-in{position:relative;border:1px solid #c9ced6;border-radius:6px}
+.wy-row{display:flex;align-items:center;gap:10px;height:46px;padding:0 54px 0 14px}
+.wy-row+.wy-row{border-top:1px solid #e5e8eb}
+.wy-row i{width:9px;height:9px;border-radius:50%;border:2px solid #1fa34f;flex:none}
+.wy-row.d i{border-color:#e0392f}
+.wy-row input{flex:1;min-width:0;border:0;outline:0;font-size:16px;background:none;color:#191f28}
+.wy-row input::placeholder{color:#9aa3ad}
+.wy-sw{position:absolute;right:10px;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:17px;border:1px solid #c9ced6;background:#fff;color:#6b7684;font-size:16px}
+.wy-act{display:flex;justify-content:space-between;margin-top:12px}
+.wy-act button{height:38px;border-radius:4px;padding:0 14px;font-size:14px;font-weight:700}
+.wy-act .re{border:1px solid #c9ced6;color:#4e5968;background:#fff;font-weight:500}
+.wy-act .go2{background:#1a73e8;color:#fff;padding:0 18px}
+.wy-sug{position:absolute;left:14px;right:14px;z-index:20;background:#fff;border:1px solid #c9ced6;border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.12);max-height:340px;overflow:auto;display:none}
+.wy-sug.on{display:block}
+.wy-sug button{display:block;width:100%;text-align:left;padding:10px 14px;border-bottom:1px solid #f2f4f6}
+.wy-sug button:last-child{border-bottom:0}
+.wy-sug button:hover,.wy-sug button.k{background:#f5f8ff}
+.wy-sug b{display:block;font-size:15px;color:#191f28}
+.wy-sug small{display:block;font-size:12.5px;color:#8b95a1;margin-top:2px}
+.wy-tabs{display:flex;gap:18px;padding:0 14px;border-bottom:1px solid var(--ln)}
+.wy-tabs button{height:44px;font-size:15px;color:#6b7684;border-bottom:2px solid transparent}
+.wy-tabs button.on{color:#191f28;font-weight:800;border-bottom-color:#191f28}
+.wy-tabs button:disabled{color:#c4cad1}
+.wy-opt{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;font-size:14px;border-bottom:1px solid var(--ln)}
+.wy-opt .now{display:flex;align-items:center;gap:6px}
+.wy-opt .now em{font-style:normal;font-size:11px;font-weight:800;color:#fff;background:#1a73e8;border-radius:9px;padding:2px 7px}
+.wy-opt select{border:0;background:none;font-size:14px;color:#4e5968;outline:0}
+.wr{padding:14px;border-bottom:1px solid var(--ln);cursor:pointer}
+.wr:hover{background:#fafbfc}
+.wr.on{background:#f0f6ff}
+.wr-tag{font-size:13px;font-weight:800;color:#1a73e8;margin-bottom:2px}
+.wr-h{display:flex;align-items:baseline;gap:8px;font-size:14px;color:#333;flex-wrap:wrap}
+.wr-h b{font-size:26px;font-weight:800;color:#191f28}
+.wr-h b small{font-size:15px;font-weight:700}
+.wr-h i{width:1px;height:12px;background:#d1d6db;align-self:center}
+.wbar{display:flex;align-items:center;height:16px;margin:10px 0 12px;background:#e9ecef;border-radius:8px;overflow:visible;position:relative}
+.wseg{height:16px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#6b7684;min-width:26px;position:relative}
+.wseg.wbus{color:#fff;border-radius:8px}
+.wseg.wbus::before{content:"";position:absolute;left:-2px;top:50%;transform:translateY(-50%);width:18px;height:18px;border-radius:9px;background:inherit;border:2px solid #fff;box-sizing:border-box}
+.wseg.wwalk{color:#8b95a1}
+.wl{display:flex;gap:10px;padding:5px 0}
+.wl-k{flex:none;width:60px;font-size:13.5px;font-weight:800;display:flex;align-items:flex-start;gap:4px}
+.wl-k.off{color:#6b7684;font-weight:700}
+.wl-k svg{width:15px;height:15px;flex:none;margin-top:2px}
+.wl-v{flex:1;min-width:0;font-size:14px;color:#333}
+.wl-v b{display:block;font-weight:600;color:#191f28}
+.wa{display:flex;align-items:center;gap:6px;font-size:13px;margin-top:3px;color:#333}
+.wa .wa-no{font-weight:800}
+.wa .wa-m{color:#e0392f;font-weight:700}
+.wa .wa-s{color:#6b7684}
+.wa.wa-none{color:#9aa3ad}
+.wr-more{font-size:13px;color:#4e5968;margin-top:6px}
+.wy-empty{padding:40px 20px;text-align:center;color:#8b95a1;font-size:14px;line-height:1.7}
+/* 상세 창: 결과를 눌러야만 열림 */
+.wy-r{flex:1;min-width:0;display:none;background:#fff}
+.wy-r.on{display:block}
+.wd-h{position:sticky;top:0;background:#fff;padding:16px 18px 14px;border-bottom:1px solid var(--ln);z-index:2}
+.wd-x{position:absolute;right:12px;top:12px;width:36px;height:36px;font-size:22px;color:#333}
+.wd-sub{font-size:13px;color:#6b7684;margin-top:2px}
+.wtl{padding:14px 18px 40px}
+.wt{display:grid;grid-template-columns:46px 30px 1fr;column-gap:8px;position:relative}
+.wt-t{font-size:12.5px;color:#6b7684;padding-top:4px;text-align:right}
+.wt-m{position:relative;display:flex;justify-content:center}
+.wt-m::before{content:"";position:absolute;top:0;bottom:0;left:50%;width:0;border-left:3px solid var(--lc,#c9ced6)}
+.wt-m.wdash::before{border-left-style:dotted;border-left-color:#aab2bb}
+.wt.first .wt-m::before{top:22px}.wt.last .wt-m::before{bottom:auto;height:22px}
+.wpin{position:relative;z-index:1;margin-top:2px;width:28px;height:28px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center}
+.wpin span{transform:rotate(45deg);color:#fff;font-size:10px;font-weight:800}
+.wpin.ws{background:#1fa34f}.wpin.we{background:#e0392f}
+.wring{position:relative;z-index:1;margin-top:6px;width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--lc,#1a73e8)}
+.wt-c{padding:2px 0 16px;min-width:0}
+.wt-c b{display:block;font-size:16px;color:#191f28}
+.wt-c small{display:block;font-size:12.5px;color:#8b95a1;margin-top:1px}
+.wt-ic{font-size:11.5px;color:#6b7684;text-align:center;align-self:center}
+.wbox{border:1px solid #e5e8eb;border-radius:10px;margin:10px 0 4px;overflow:hidden}
+.wbox .wln{padding:10px 14px}
+.wbox .wln+.wln{border-top:1px solid #f2f4f6}
+.wbox .wno{display:inline-block;font-size:13px;font-weight:800;color:#fff;border-radius:4px;padding:2px 8px;margin-right:6px}
+.wbox .wm{color:#e0392f;font-weight:700}
+.wbox .wdd{display:block;font-size:12.5px;color:#6b7684;margin-top:3px}
+.wbox .wmore{display:block;width:100%;text-align:center;padding:11px;border-top:1px solid #f2f4f6;font-size:13.5px;color:#333}
+.wmv{font-size:13px;color:#6b7684;margin:8px 0;cursor:pointer}
+.wmv-l{font-size:13px;color:#4e5968;margin:4px 0 8px;padding-left:2px;line-height:1.9}
+@media (max-width:899px){
+  .wy-l{max-width:none;border-right:0}
+  .wy-r{position:fixed;inset:0;z-index:60;overflow:auto}
+}
+@media (min-width:900px){
+  .wy-r{position:sticky;top:0;height:100vh;overflow:auto}
+}
 </style>
 </head>
 <body>
@@ -242,6 +377,10 @@ button.card:active{background:#f9fafb}
     <div class="hm-tab" id="tab-search"></div>
     <div class="hm-tab" id="tab-home">
       <div class="card" id="liveBn"></div>
+      <div class="card qa2">
+        <button onclick="openWay()"><i style="background:#e8f3ff"><svg viewBox="0 0 24 24" fill="none" stroke="#3182f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="19" r="2.2"/><circle cx="18" cy="5" r="2.2"/><path d="M8.2 19H15a3.5 3.5 0 0 0 0-7H9a3.5 3.5 0 0 1 0-7h6.8"/></svg></i><b>길찾기</b></button>
+        <button onclick="openGeo()"><i style="background:#e6f6ec"><svg viewBox="0 0 24 24" fill="none" stroke="#1a9b4b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4L3 6.5v13.5l6-2.5 6 2.5 6-2.5V4l-6 2.5z"/><path d="M9 4v13.5M15 6.5V20"/></svg></i><b>초정밀버스</b></button>
+      </div>
       <div class="sec"><span>즐겨찾기</span><button id="favEd" onclick="toggleFavEdit()">편집</button></div>
       <div id="favs"></div>
       <div class="sec"><span>지역</span><button onclick="setTab('maps')">전체 보기 ›</button></div>
@@ -270,6 +409,7 @@ button.card:active{background:#f9fafb}
       <button class="kb" onclick="back()" aria-label="뒤로"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
       <div class="kt1"><span class="kno" id="mNo"></span><span class="kty" id="mTy"></span></div>
       <button class="kb" id="favBtn" onclick="toggleFav()" aria-label="즐겨찾기"><svg viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.3 5.9.85-4.25 4.15 1 5.85L12 16.9l-5.25 2.75 1-5.85L3.5 9.65l5.9-.85z"/></svg></button>
+      <button class="kb" onclick="openGeo(st.rt)" aria-label="초정밀버스 지도"><svg viewBox="0 0 24 24"><path d="M9 4L3 6.5v13.5l6-2.5 6 2.5 6-2.5V4l-6 2.5z"/><path d="M9 4v13.5M15 6.5V20"/></svg></button>
       <button class="kb" onclick="refresh()" aria-label="새로고침"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.5-5.8"/><path d="M20 4v5h-5"/></svg></button>
     </div>
     <div class="k2" id="mSub"></div>
@@ -280,6 +420,50 @@ button.card:active{background:#f9fafb}
   <div class="map" id="map"></div>
   <button class="kfab" onclick="goBus()" aria-label="버스 위치로"><svg viewBox="0 0 24 24"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm8.94 3A9 9 0 0 0 13 3.06V1h-2v2.06A9 9 0 0 0 3.06 11H1v2h2.06A9 9 0 0 0 11 20.94V23h2v-2.06A9 9 0 0 0 20.94 13H23v-2h-2.06zM12 19a7 7 0 1 1 0-14 7 7 0 0 1 0 14z"/></svg></button>
   <div class="sheet" id="sheet"></div>
+</section>
+
+<section class="scr full" id="s-geo">
+  <div class="gh">
+    <button class="kb" onclick="back()" aria-label="뒤로"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <div class="gt"><b id="gTitle">초정밀버스</b><small id="gSub"></small></div>
+    <button class="aitg" onclick="toggleAi()"></button>
+  </div>
+  <div class="gwrap" id="gwrap">
+    <canvas id="gcv"></canvas>
+    <div class="glegend" id="gLeg"></div>
+    <div class="gzoom">
+      <button onclick="gZoom(1.5)" aria-label="확대">+</button>
+      <button onclick="gZoom(1/1.5)" aria-label="축소">−</button>
+      <button onclick="gFit()" aria-label="전체 보기"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+      <button onclick="gMe()" aria-label="내 버스로"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8"/></svg></button>
+    </div>
+    <div class="gempty" id="gEmpty"></div>
+    <div class="gcard" id="gCard"></div>
+  </div>
+</section>
+
+<section class="scr wide" id="s-way">
+  <div class="wy">
+    <div class="wy-l">
+      <div class="wy-top">
+        <div class="wy-bar"><button class="kb" onclick="back()" aria-label="뒤로"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h1>길찾기</h1></div>
+        <div class="wy-in">
+          <label class="wy-row o"><i></i><input id="wyO" placeholder="출발지 정류장" autocomplete="off" oninput="wySug('o')" onfocus="wySug('o')" onkeydown="wyKey(event,'o')"></label>
+          <label class="wy-row d"><i></i><input id="wyD" placeholder="도착지 정류장" autocomplete="off" oninput="wySug('d')" onfocus="wySug('d')" onkeydown="wyKey(event,'d')"></label>
+          <button class="wy-sw" onclick="wySwap()" aria-label="출발지·도착지 바꾸기">⇅</button>
+        </div>
+        <div class="wy-sug" id="wySug"></div>
+        <div class="wy-act"><button class="re" onclick="wyReset()">↻ 다시입력</button><button class="go2" onclick="wyGo()">길찾기 ›</button></div>
+      </div>
+      <div class="wy-tabs" id="wyTabs"></div>
+      <div class="wy-opt" id="wyOpt" style="display:none">
+        <span class="now"><em>ON</em><span id="wyNow"></span></span>
+        <select id="wySort" onchange="W.sort=this.value;wyDraw()"><option value="best">최적 경로순</option><option value="time">최소 시간순</option><option value="xfer">최소 환승순</option></select>
+      </div>
+      <div id="wyList"><div class="wy-empty">출발지와 도착지 정류장을 입력하세요.<br>바로 가는 버스와 1번 갈아타는 경로를 찾아 드립니다.</div></div>
+    </div>
+    <div class="wy-r" id="wyR"></div>
+  </div>
 </section>
 
 <script>
@@ -391,6 +575,7 @@ function show(id,push=true){
   document.querySelectorAll('.scr').forEach(e=>e.classList.toggle('on',e.id===id));
   if(push&&stack[stack.length-1]!==id)stack.push(id);
   closeSheet();window.scrollTo(0,0);
+  if(id==='s-geo')requestAnimationFrame(()=>gResize());
 }
 function back(){if(stack.length>1){stack.pop();show(stack[stack.length-1],false)}}
 
@@ -935,11 +1120,528 @@ async function pollLive(){
       if($('#s-map').classList.contains('on'))drawMap();
       if(st.bus)drawSheet();
     }else if($('#s-map').classList.contains('on')){updStamp()}
+    if($('#s-geo').classList.contains('on'))gLoad(false);
+    if($('#s-way').classList.contains('on')&&W.res.length&&!document.activeElement.closest?.('.wy-in'))wyDraw();
   }catch(e){
     if(!ERR){ERR=true;LIVE=null;drawBanner();if(!DATA.length)drawRegions()}
   }
 }
 async function refresh(){await loadRoutes();await pollLive();if(st.rt)drawMap()}
+
+/* ═════════════════════ 초정밀버스 지도 ═════════════════════
+   openOMSI 는 지도 그림을 주지 않으므로, 서버가 모은 '차들이 다닌 자리(도로 칸)'를 흰 길로 그리고
+   그 위에 정류장 · 노선 선 · 버스(내 버스 / 멀티플레이 / AI)를 실제 좌표로 올린다.
+   좌표: OMSI x = 동쪽, y = 북쪽 → 화면 y 는 뒤집는다. */
+const G={geo:null,live:null,ver:-1,gt:0,view:null,route:null,sel:null,hits:[],road:null,dpr:1,busy:false,ptr:new Map(),moved:false};
+const stopKey=n=>String(n||'').toLowerCase().replace(/[^0-9a-zㄱ-ㆎ가-힣]/g,'');
+function geoStops(){
+  const m=new Map();
+  ((G.geo&&G.geo.stops)||[]).forEach(s=>m.set(stopKey(s.n),s));
+  return m;
+}
+function openGeo(r){
+  G.route=r&&r.dirs?r:null;G.sel=null;G.view=null;
+  $('#gCard').classList.remove('on');
+  show('s-geo');
+  $('#gTitle').textContent=G.route?`${G.route.no}번 초정밀버스`:'초정밀버스';
+  gResize();gLoad(true);
+}
+async function gLoad(force){
+  if(G.busy)return;G.busy=true;
+  try{
+    const lv=await jget('/api/map/live');G.live=lv;
+    if(force||!G.geo||(lv.ver!==G.ver&&Date.now()-G.gt>60000)){   /* 도로 데이터는 커서 1분에 한 번만 다시 받음 */
+      const g=await jget('/api/map/geo');
+      if(!G.geo||g.ver!==G.geo.ver||g.cells.length!==G.geo.cells.length)G.road=null;
+      G.geo=g;G.ver=g.ver;G.gt=Date.now();G.stopMap=geoStops();
+    }
+    if(!G.view)gFit();
+    gDraw();
+  }catch(e){
+    if(!G.geo){const e2=$('#gEmpty');e2.style.display='block';e2.textContent='서버에 연결할 수 없습니다.'}
+  }finally{G.busy=false}
+}
+function gResize(){
+  const cv=$('#gcv'),w=$('#gwrap');if(!cv||!w)return;
+  G.dpr=Math.min(2,window.devicePixelRatio||1);
+  cv.width=Math.max(1,Math.round(w.clientWidth*G.dpr));cv.height=Math.max(1,Math.round(w.clientHeight*G.dpr));
+  gDraw();
+}
+window.addEventListener('resize',()=>{if($('#s-geo').classList.contains('on'))gResize()});
+function gW(){return $('#gcv').width/G.dpr}
+function gH(){return $('#gcv').height/G.dpr}
+function w2s(x,y){const v=G.view;return [(x-v.cx)*v.k+gW()/2,gH()/2-(y-v.cy)*v.k]}
+function s2w(sx,sy){const v=G.view;return [(sx-gW()/2)/v.k+v.cx,(gH()/2-sy)/v.k+v.cy]}
+/* 화면에 맞추기: 노선을 보고 있으면 그 노선 정류장, 아니면 도로·정류장·버스 전체 */
+function gFit(){
+  const pts=[];
+  const sm=G.stopMap||new Map();
+  if(G.route){G.route.dirs.forEach(d=>d.stops.forEach(s=>{const p=sm.get(stopKey(s.name));if(p)pts.push([p.x,p.y])}))}
+  if(!pts.length){
+    (G.geo&&G.geo.stops||[]).forEach(s=>pts.push([s.x,s.y]));
+    const c=(G.geo&&G.geo.cells)||[],cs=(G.geo&&G.geo.cell)||6,step=Math.max(2,Math.floor(c.length/4000)*2);
+    for(let i=0;i<c.length-1;i+=step)pts.push([c[i]*cs,c[i+1]*cs]);
+    const L=G.live;if(L){if(L.me)pts.push([L.me.x,L.me.y]);(L.buses||[]).forEach(b=>pts.push([b.x,b.y]))}
+  }
+  if(!pts.length){G.view={cx:0,cy:0,k:0.2};gDraw();return}
+  let x0=Infinity,x1=-Infinity,y0=Infinity,y1=-Infinity;
+  pts.forEach(([x,y])=>{x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y)});
+  const w=Math.max(80,x1-x0),h=Math.max(80,y1-y0);
+  G.view={cx:(x0+x1)/2,cy:(y0+y1)/2,k:Math.min((gW()-60)/w,(gH()-90)/h)};
+  G.view.k=Math.max(0.005,Math.min(8,G.view.k));
+  gDraw();
+}
+function gZoom(f,sx,sy){
+  if(!G.view)return;
+  sx=sx==null?gW()/2:sx;sy=sy==null?gH()/2:sy;
+  const [wx,wy]=s2w(sx,sy);
+  G.view.k=Math.max(0.005,Math.min(12,G.view.k*f));
+  const [nx,ny]=s2w(sx,sy);G.view.cx+=wx-nx;G.view.cy+=wy-ny;
+  gDraw();
+}
+function gMe(){
+  const L=G.live,m=L&&L.me;
+  const b=m||(G.sel&&gFind(G.sel));
+  if(!b){gToast('내 버스 위치 정보가 아직 없습니다 (게임에서 버스를 운전 중일 때 표시)');return}
+  G.view.cx=b.x;G.view.cy=b.y;G.view.k=Math.max(G.view.k,1.2);gDraw();
+}
+function gToast(t){const c=$('#gCard');c.innerHTML=`<button class="x" onclick="gClose()">✕</button><div class="gc-s" style="margin:0;padding-right:30px">${esc(t)}</div>`;c.classList.add('on')}
+function gClose(){G.sel=null;$('#gCard').classList.remove('on');gDraw()}
+/* 도로 칸을 한 장의 그림(1칸=1픽셀)으로 미리 만들어 두고, 화면에는 확대·축소해서 붙인다 → 칸이 수십만 개여도 빠름 */
+function gRoadRaster(){
+  const g=G.geo;if(!g||!g.cells||g.cells.length<2)return null;
+  const c=g.cells;let x0=Infinity,x1=-Infinity,y0=Infinity,y1=-Infinity;
+  for(let i=0;i<c.length-1;i+=2){const x=c[i],y=c[i+1];if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
+  const f=Math.max(1,Math.ceil(Math.max(x1-x0+3,y1-y0+3)/4000));        // 너무 큰 맵은 줄여서
+  const W=Math.ceil((x1-x0+3)/f),H=Math.ceil((y1-y0+3)/f);
+  const mk=(grow,col)=>{
+    const cv=document.createElement('canvas');cv.width=W;cv.height=H;const x=cv.getContext('2d');x.fillStyle=col;
+    for(let i=0;i<c.length-1;i+=2){const px=Math.floor((c[i]-x0+1)/f),py=Math.floor((y1-c[i+1]+1)/f);x.fillRect(px-grow,py-grow,1+2*grow,1+2*grow)}
+    return cv;
+  };
+  return {casing:mk(2,'#cfd6de'),road:mk(1,'#ffffff'),x0:(x0-1)*g.cell,y1:(y1+2)*g.cell,size:g.cell*f};
+}
+function gFind(key){const L=G.live;if(!L)return null;if(L.me&&L.me.key===key)return L.me;return (L.buses||[]).find(b=>b.key===key)||null}
+function gDraw(){
+  const cv=$('#gcv');if(!cv||!G.view||!$('#s-geo').classList.contains('on'))return;
+  const x=cv.getContext('2d'),W=gW(),H=gH();
+  x.setTransform(G.dpr,0,0,G.dpr,0,0);
+  x.fillStyle='#e9edf1';x.fillRect(0,0,W,H);
+  const g=G.geo,L=G.live||{};
+  const hasRoad=g&&g.cells&&g.cells.length>1,hasStop=g&&g.stops&&g.stops.length;
+  const em=$('#gEmpty');
+  if(!hasRoad&&!hasStop&&!(L.me)&&!(L.buses||[]).length){
+    em.style.display='block';
+    em.innerHTML='아직 지도 정보가 없습니다.<br>게임에서 <b>KoreaBIS_AI.lua</b> 가 동작하면<br>차들이 다닌 길이 지도로 그려지고<br>버스가 실시간으로 올라옵니다.';
+  }else em.style.display='none';
+  $('#gSub').textContent=[g&&g.map_display||g&&g.map&&g.map!=='default'?(g.map_display||g.map):'',
+    hasRoad?`도로 ${Math.round(g.cells.length/2).toLocaleString()}칸`:'도로 그리는 중',
+    `버스 ${(L.buses||[]).filter(b=>AI_ON||b.kind!=='ai').length+(L.me?1:0)}대`].filter(Boolean).join(' · ');
+  /* 도로 */
+  if(hasRoad){
+    if(!G.road)G.road=gRoadRaster();
+    const R=G.road;
+    if(R){
+      const [sx,sy]=w2s(R.x0,R.y1),sc=R.size*G.view.k;
+      x.imageSmoothingEnabled=true;
+      x.drawImage(R.casing,sx,sy,R.casing.width*sc,R.casing.height*sc);
+      x.drawImage(R.road,sx,sy,R.road.width*sc,R.road.height*sc);
+    }
+  }
+  /* 노선 선 (노선을 보고 있을 때) */
+  const sm=G.stopMap||new Map();
+  if(G.route){
+    const rc=routeColor(G.route);
+    G.route.dirs.forEach((d,k)=>{
+      x.beginPath();let on=false;
+      d.stops.forEach(s=>{const p=sm.get(stopKey(s.name));if(!p)return;const [a,b]=w2s(p.x,p.y);on?x.lineTo(a,b):x.moveTo(a,b);on=true});
+      x.strokeStyle=k===0?rc:rgba(rc,.45);x.lineWidth=k===0?5:4;x.lineJoin='round';x.lineCap='round';
+      x.setLineDash(k===0?[]:[8,6]);x.stroke();x.setLineDash([]);
+    });
+  }
+  /* 정류장 */
+  G.hits=[];
+  const rk=G.route?new Set(G.route.dirs.flatMap(d=>d.stops.map(s=>stopKey(s.name)))):null;
+  const showLbl=G.view.k>0.55,boxes=[];
+  ((g&&g.stops)||[]).forEach(s=>{
+    const [a,b]=w2s(s.x,s.y);if(a<-20||b<-20||a>W+20||b>H+20)return;
+    const mine=rk&&rk.has(stopKey(s.n));
+    const r=mine?5:(G.view.k>0.3?3.5:2.5);
+    x.beginPath();x.arc(a,b,r,0,7);x.fillStyle='#fff';x.fill();
+    x.lineWidth=mine?2.5:1.5;x.strokeStyle=mine?routeColor(G.route):'#7b8794';x.stroke();
+    G.hits.push({t:'stop',s,a,b,r:Math.max(9,r+5)});
+    if(showLbl||(mine&&G.view.k>0.25)){
+      const t=s.d||s.n;x.font=`${mine?700:500} 11.5px -apple-system,"Malgun Gothic",sans-serif`;
+      const w=x.measureText(t).width,bx=a+7,by=b-7;
+      if(!boxes.some(q=>bx<q[2]&&bx+w>q[0]&&by-11<q[3]&&by+3>q[1])){
+        boxes.push([bx,by-11,bx+w,by+3]);
+        x.lineWidth=3;x.strokeStyle='rgba(255,255,255,.9)';x.strokeText(t,bx,by);x.fillStyle=mine?'#191f28':'#4e5968';x.fillText(t,bx,by);
+      }
+    }
+  });
+  /* 버스 */
+  const buses=(L.buses||[]).filter(b=>AI_ON||b.kind!=='ai');
+  const rno=G.route&&String(G.route.no);
+  const list=[...buses.map(b=>({...b,dim:rno&&String(b.line)!==rno})),...(L.me?[{...L.me,kind:'me'}]:[])];
+  list.sort((p,q)=>(p.dim?0:1)-(q.dim?0:1)||(p.kind==='me')-(q.kind==='me'));
+  list.forEach(b=>{
+    const [a,c]=w2s(b.x,b.y);if(a<-40||c<-40||a>W+40||c>H+40)return;
+    const sel=G.sel===b.key;
+    const col=b.kind==='me'?'#1b2a4a':b.kind==='guest'?(/^#[0-9a-f]{6}$/i.test(b.color||'')?b.color:'#7c4dff'):(b.cg!=null?CG_COL[b.cg]:'#6b7380');
+    const label=b.kind==='me'?(b.line?b.line+' 내 버스':'내 버스'):String(b.line||'?');
+    x.globalAlpha=b.dim?0.35:1;
+    if(b.hx!=null&&b.hy!=null){            // 진행 방향 화살표
+      const dx=b.hx,dy=-b.hy,len=Math.hypot(dx,dy)||1,ux=dx/len,uy=dy/len;
+      x.beginPath();x.moveTo(a+ux*22,c+uy*22);x.lineTo(a+ux*12-uy*6,c+uy*12+ux*6);x.lineTo(a+ux*12+uy*6,c+uy*12-ux*6);x.closePath();
+      x.fillStyle=col;x.fill();
+    }
+    x.font='800 12px -apple-system,"Malgun Gothic",sans-serif';
+    const tw=x.measureText(label).width,w=tw+16,h=22;
+    if(b.kind==='me'||sel){x.beginPath();x.arc(a,c,sel?20:17,0,7);x.fillStyle=rgba(col,.18);x.fill()}
+    gRound(x,a-w/2,c-h/2,w,h,11);x.fillStyle=col;x.fill();x.lineWidth=sel?3:2;x.strokeStyle='#fff';x.stroke();
+    x.fillStyle='#fff';x.textAlign='center';x.textBaseline='middle';x.fillText(label,a,c+0.5);x.textAlign='left';x.textBaseline='alphabetic';
+    x.globalAlpha=1;
+    G.hits.push({t:'bus',b,a,c,w:w/2+4,h:h/2+4});
+  });
+  /* 범례 */
+  $('#gLeg').innerHTML=`<span><i style="background:#1b2a4a"></i>내 버스</span><span><i style="background:#7c4dff"></i>멀티플레이</span>${AI_ON?`<span><i style="background:${CG_COL[0]}"></i>여유</span><span><i style="background:${CG_COL[1]}"></i>보통</span><span><i style="background:${CG_COL[2]}"></i>혼잡</span>`:''}`;
+}
+function gRound(x,l,t,w,h,r){x.beginPath();x.moveTo(l+r,t);x.arcTo(l+w,t,l+w,t+h,r);x.arcTo(l+w,t+h,l,t+h,r);x.arcTo(l,t+h,l,t,r);x.arcTo(l,t,l+w,t,r);x.closePath()}
+/* 누르기: 버스 → 정보 카드, 정류장 → 지나는 노선 */
+function gTap(sx,sy){
+  for(let i=G.hits.length-1;i>=0;i--){
+    const h=G.hits[i];
+    if(h.t==='bus'&&Math.abs(sx-h.a)<=h.w&&Math.abs(sy-h.c)<=h.h){gShowBus(h.b);return}
+  }
+  for(let i=G.hits.length-1;i>=0;i--){
+    const h=G.hits[i];
+    if(h.t==='stop'&&Math.hypot(sx-h.a,sy-h.b)<=h.r){gShowStop(h.s);return}
+  }
+  gClose();
+}
+function gShowBus(b){
+  G.sel=b.key;gDraw();
+  const kind=b.kind==='me'?'내 버스':b.kind==='guest'?'멀티플레이 버스':'AI 버스';
+  const canRoute=b.kind==='me'?!!(LIVE&&LIVE.journey):RUNS.some(r=>r.run_key===b.key);
+  const c=$('#gCard');
+  c.innerHTML=`<button class="x" onclick="gClose()">✕</button>
+    <div class="gc-h"><span class="gc-no" style="color:${b.kind==='me'?'#1b2a4a':b.cg!=null?CG_COL[b.cg]:'#333'}">${esc(b.line||'노선 정보 없음')}</span>
+      ${b.congestion?`<span class="pill" style="color:${CG_COL[b.cg]}">${esc(b.congestion)}</span>`:''}</div>
+    <div class="gc-s">${esc([kind,b.plate,b.speed!=null?b.speed+'km/h':'',b.next?'다음 '+b.next:'',b.kind==='me'&&!b.on_duty?'운행 종료 상태':''].filter(Boolean).join(' · '))}</div>
+    <div class="gc-b">${canRoute?`<button onclick="gOpenRoute('${esc(b.key)}')">노선도 보기</button>`:''}<button class="g2" onclick="gFollow('${esc(b.key)}')">이 버스로 이동</button></div>`;
+  c.classList.add('on');
+}
+function gFollow(key){const b=gFind(key);if(!b)return;G.view.cx=b.x;G.view.cy=b.y;G.view.k=Math.max(G.view.k,1.2);gDraw()}
+function gOpenRoute(key){
+  if(key==='__mine__'){VIEW=null;VIEW_REMOTE=false;openLive();stack.splice(1,0,'s-geo');return}
+  const r=RUNS.find(x=>x.run_key===key);if(!r)return;
+  VIEW_KEY=key;VIEW=toLive(r);VIEW_REMOTE=true;st.live=true;st.rg=null;st.rt=liveRoute();
+  stack.length=0;stack.push('s-region','s-geo');
+  pickDir(0);
+}
+function gShowStop(s){
+  G.sel=null;gDraw();
+  const k=stopKey(s.n),hits=[];
+  DATA.forEach((g,gi)=>g.routes.forEach((r,ri)=>{if(r.dirs.some(d=>d.stops.some(x=>stopKey(x.name)===k)))hits.push({gi,ri,r})}));
+  const c=$('#gCard');
+  c.innerHTML=`<button class="x" onclick="gClose()">✕</button>
+    <div class="gc-h"><span style="font-size:18px;font-weight:800">${esc(s.d||s.n)}</span></div>
+    <div class="gc-s">${esc(s.n)}${hits.length?` · 지나는 노선 ${hits.length}개`:' · HOF 에 이 정류장을 지나는 노선이 없습니다'}</div>
+    ${hits.length?`<div class="gc-r">${hits.slice(0,20).map(h=>{const rc=routeColor(h.r);return `<button style="color:${rc};background:${rgba(rc,.1)}" onclick="openRouteVia(${h.gi},${h.ri},0,'s-geo')">${esc(h.r.no)}</button>`}).join('')}</div>`:''}
+    <div class="gc-b"><button class="g2" onclick="wyFromStop('${esc(s.n)}','o')">여기서 출발</button><button class="g2" onclick="wyFromStop('${esc(s.n)}','d')">여기로 도착</button></div>`;
+  c.classList.add('on');
+}
+/* 지도 움직이기: 끌기 · 두 손가락 확대 · 마우스 휠 */
+(function(){
+  const cv=document.getElementById('gcv');if(!cv)return;
+  let last=null,pinch=null,down=null;
+  const pos=e=>{const r=cv.getBoundingClientRect();return [e.clientX-r.left,e.clientY-r.top]};
+  cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);G.ptr.set(e.pointerId,pos(e));last=pos(e);down=pos(e);G.moved=false;cv.classList.add('drag')});
+  cv.addEventListener('pointermove',e=>{
+    if(!G.ptr.has(e.pointerId)||!G.view)return;
+    const p=pos(e);G.ptr.set(e.pointerId,p);
+    if(G.ptr.size===2){
+      const [a,b]=[...G.ptr.values()],d=Math.hypot(a[0]-b[0],a[1]-b[1]),m=[(a[0]+b[0])/2,(a[1]+b[1])/2];
+      if(pinch){gZoom(d/pinch.d,m[0],m[1]);G.view.cx-=(m[0]-pinch.m[0])/G.view.k;G.view.cy+=(m[1]-pinch.m[1])/G.view.k}
+      pinch={d,m};G.moved=true;return;
+    }
+    if(last){G.view.cx-=(p[0]-last[0])/G.view.k;G.view.cy+=(p[1]-last[1])/G.view.k;last=p;
+      if(down&&Math.hypot(p[0]-down[0],p[1]-down[1])>5)G.moved=true;gDraw()}
+  });
+  const up=e=>{
+    const p=G.ptr.get(e.pointerId);G.ptr.delete(e.pointerId);
+    if(G.ptr.size<2)pinch=null;
+    if(!G.ptr.size){cv.classList.remove('drag');if(!G.moved&&p)gTap(p[0],p[1]);last=null}
+    else last=[...G.ptr.values()][0];
+  };
+  cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
+  cv.addEventListener('wheel',e=>{e.preventDefault();const p=pos(e);gZoom(e.deltaY<0?1.2:1/1.2,p[0],p[1])},{passive:false});
+})();
+
+/* ═════════════════════ 길찾기 ═════════════════════
+   출발·도착 정류장 → 바로 가는 버스 + 1번 갈아타는 경로.
+   소요 시간: 정류장 좌표가 있으면 거리 ÷ 25km/h + 정차 20초, 없으면 정류장 사이 1분 30초로 추정.
+   실시간 도착: 그 노선을 달리는 버스(내 버스 · 멀티플레이 · AI)가 승차 정류장까지 몇 정류장 남았는지. */
+const W={o:null,d:null,res:[],tab:'all',sort:'best',sel:null,focus:null,sug:[],ki:-1,open:{},at:0};
+/* 같은 정류장의 반대편·승강장(1/2, G1/G2)은 하나로 묶는다 */
+const baseName=n=>String(n||'').replace(/\s+[A-Z]?\d{1,2}$/,'').replace(/([a-z])\d$/,'$1').trim()||String(n||'');
+function wyGroups(){
+  if(W.gData===DATA&&W.groups)return W.groups;
+  const m=new Map();
+  DATA.forEach((g,gi)=>g.routes.forEach(r=>r.dirs.forEach(d=>d.stops.forEach(s=>{
+    const key=gi+'|'+stopKey(baseName(s.name));
+    let x=m.get(key);
+    if(!x){x={key,gi,region:g.name,name:baseName(s.display||s.name),orig:baseName(s.name),names:new Set(),routes:new Set()};m.set(key,x)}
+    x.names.add(s.name);x.routes.add(r.no);
+  }))));
+  W.groups=[...m.values()];W.gData=DATA;W.gByKey=m;
+  return W.groups;
+}
+function openWay(){
+  show('s-way');wyGroups();
+  if(!G.geo)jget('/api/map/geo').then(g=>{G.geo=g;G.stopMap=geoStops();if(W.res.length)wySearch()}).catch(()=>{});
+  wyDraw();
+}
+function wyFromStop(name,which){
+  const k=stopKey(name);const g=wyGroups().find(x=>[...x.names].some(n=>stopKey(n)===k));
+  if(!g)return;
+  if(!$('#s-way').classList.contains('on'))openWay();
+  wyPick(which,g);
+}
+function wySug(which){
+  W.focus=which;W.ki=-1;
+  const q=$(which==='o'?'#wyO':'#wyD').value.trim().toLowerCase();
+  const gs=wyGroups(),out=[];
+  if(!q&&LIVE&&LIVE.connected&&LIVE.next_stop){            // 입력 전: 내 버스 다음 정류장 추천
+    const k=stopKey(baseName(LIVE.next_stop));const g=gs.find(x=>stopKey(x.orig)===k);
+    if(g)out.push({g,tip:'내 버스 다음 정류장'});
+  }
+  if(q){
+    gs.forEach(g=>{
+      const hay=(g.name+' '+g.orig+' '+[...g.names].join(' ')).toLowerCase();
+      if(hay.includes(q))out.push({g,rank:g.name.toLowerCase().startsWith(q)||g.orig.toLowerCase().startsWith(q)?0:1});
+    });
+    out.sort((a,b)=>a.rank-b.rank||a.g.name.localeCompare(b.g.name,'ko'));
+  }
+  W.sug=out.slice(0,12);
+  const el=$('#wySug');
+  if(!W.sug.length){el.classList.remove('on');el.innerHTML=q?'':'';if(q){el.innerHTML='<div class="wy-empty" style="padding:16px">검색 결과가 없습니다</div>';el.classList.add('on')}return}
+  const box=$(which==='o'?'#wyO':'#wyD').closest('.wy-row'),top=box.offsetTop+box.offsetHeight+$('.wy-in').offsetTop+2;
+  el.style.top=top+'px';
+  el.innerHTML=W.sug.map((x,i)=>`<button onmousedown="event.preventDefault()" onclick="wyPickI(${i})"><b>${esc(x.g.name)}</b><small>${esc([x.tip,x.g.region,'노선 '+[...x.g.routes].slice(0,6).join(', ')+(x.g.routes.size>6?' …':'')].filter(Boolean).join(' · '))}</small></button>`).join('');
+  el.classList.add('on');
+}
+function wyKey(e,which){
+  const n=W.sug.length;if(!n)return;
+  if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();W.ki=(W.ki+(e.key==='ArrowDown'?1:-1)+n)%n;
+    [...$('#wySug').children].forEach((b,i)=>b.classList.toggle('k',i===W.ki))}
+  else if(e.key==='Enter'){e.preventDefault();wyPickI(Math.max(0,W.ki))}
+  else if(e.key==='Escape')$('#wySug').classList.remove('on');
+}
+function wyPickI(i){const x=W.sug[i];if(x)wyPick(W.focus,x.g)}
+function wyPick(which,g){
+  W[which]=g;$(which==='o'?'#wyO':'#wyD').value=g.name;$('#wySug').classList.remove('on');
+  if(which==='o'&&!W.d)$('#wyD').focus();
+  if(W.o&&W.d)wySearch();
+}
+document.addEventListener('click',e=>{if(!e.target.closest('.wy-in')&&!e.target.closest('#wySug')){const s=$('#wySug');s&&s.classList.remove('on')}});
+function wySwap(){[W.o,W.d]=[W.d,W.o];$('#wyO').value=W.o?W.o.name:'';$('#wyD').value=W.d?W.d.name:'';if(W.o&&W.d)wySearch()}
+function wyReset(){W.o=W.d=null;W.res=[];W.sel=null;$('#wyO').value='';$('#wyD').value='';$('#wyR').classList.remove('on');wyDraw();$('#wyO').focus()}
+function wyGo(){
+  for(const w of ['o','d']){
+    if(!W[w]){
+      const q=$(w==='o'?'#wyO':'#wyD').value.trim().toLowerCase();
+      const g=q&&wyGroups().find(x=>x.name.toLowerCase()===q||x.orig.toLowerCase()===q)||(q&&wyGroups().find(x=>x.name.toLowerCase().includes(q)));
+      if(g)wyPick(w,g);
+    }
+  }
+  if(!W.o||!W.d){$('#wyList').innerHTML='<div class="wy-empty">출발지와 도착지를 목록에서 골라 주세요.</div>';return}
+  wySearch();
+}
+/* ── 시간 추정 ── */
+function wyXY(name){const sm=G.stopMap;return sm?sm.get(stopKey(name))||null:null}
+function wySeg(d,i){
+  const a=wyXY(d.stops[i].name),b=wyXY(d.stops[i+1]&&d.stops[i+1].name);
+  if(a&&b)return Math.max(30,Math.min(600,Math.hypot(a.x-b.x,a.y-b.y)/7+20));
+  return 90;
+}
+function wyRide(d,a,b){let t=0;for(let i=a;i<b;i++)t+=wySeg(d,i);return t}
+/* ── 경로 찾기 ── */
+function wySearch(){
+  W.sel=null;$('#wyR').classList.remove('on');
+  const o=W.o,d=W.d;
+  if(!o||!d)return;
+  if(o.key===d.key){W.res=[];$('#wyList').innerHTML='<div class="wy-empty">출발지와 도착지가 같습니다.</div>';wyDrawTabs();return}
+  if(o.gi!==d.gi){W.res=[];$('#wyList').innerHTML=`<div class="wy-empty">출발지(${esc(o.region)})와 도착지(${esc(d.region)})가 다른 지역입니다.</div>`;wyDrawTabs();return}
+  const R=DATA[o.gi],O=o.names,D=d.names;
+  const dirs=[];R.routes.forEach((r,ri)=>r.dirs.forEach((dd,k)=>dirs.push({r,ri,k,d:dd})));
+  const res=[],best=new Map();
+  const add=c=>{const id=c.legs.map(l=>l.r.no+'#'+l.k).join('>');const p=best.get(id);if(!p||c.total<p.total)best.set(id,c)};
+  const gkey=n=>stopKey(baseName(n));
+  /* 1) 바로 가기 */
+  dirs.forEach(x=>{
+    const s=x.d.stops;
+    for(let j=1;j<s.length;j++){
+      if(!D.has(s[j].name))continue;
+      for(let i=j-1;i>=0;i--){if(O.has(s[i].name)){const t=wyRide(x.d,i,j);add({legs:[{...x,from:i,to:j,sec:t}],walks:[],total:t,xfer:0});break}}
+    }
+  });
+  /* 2) 한 번 갈아타기: 같은 정류장(반대편 포함) 또는 300m 안 */
+  const byKey=new Map();
+  dirs.forEach(x=>x.d.stops.forEach((s,m)=>{const k=gkey(s.name);(byKey.get(k)||byKey.set(k,[]).get(k)).push({x,m})}));
+  const lastD=new Map();dirs.forEach(x=>{let b=-1;x.d.stops.forEach((s,j)=>{if(D.has(s.name))b=j});lastD.set(x,b)});
+  const near=(n1,n2)=>{const a=wyXY(n1),b=wyXY(n2);return a&&b?Math.hypot(a.x-b.x,a.y-b.y):null};
+  const allStops=[...new Set(dirs.flatMap(x=>x.d.stops.map(s=>s.name)))];
+  const nearCache=new Map();
+  const nearList=n=>{
+    if(nearCache.has(n))return nearCache.get(n);
+    const a=wyXY(n),out=[];
+    if(a)allStops.forEach(m=>{if(gkey(m)===gkey(n))return;const b=wyXY(m);if(b){const dd=Math.hypot(a.x-b.x,a.y-b.y);if(dd<=300)out.push({m,dd})}});
+    nearCache.set(n,out);return out;
+  };
+  dirs.forEach(A=>{
+    const s=A.d.stops;
+    for(let i=0;i<s.length-1;i++){
+      if(!O.has(s[i].name))continue;
+      if(i+1<s.length&&O.has(s[i+1].name))continue;           // 더 가까운 출발 정류장이 바로 뒤에 있으면 그쪽에서
+      for(let t=i+1;t<s.length;t++){
+        if(D.has(s[t].name))break;                              // 이미 도착 → 바로 가기로 충분
+        const cand=[...(byKey.get(gkey(s[t].name))||[]).map(o2=>({...o2,walk:s[t].name===o2.x.d.stops[o2.m].name?0:(near(s[t].name,o2.x.d.stops[o2.m].name)??60)}))];
+        nearList(s[t].name).forEach(nb=>(byKey.get(gkey(nb.m))||[]).forEach(o2=>{if(o2.x.d.stops[o2.m].name===nb.m)cand.push({...o2,walk:nb.dd})}));
+        cand.forEach(({x:B,m,walk})=>{
+          if(B.r===A.r)return;
+          const n=lastD.get(B);if(n<=m)return;
+          let n2=-1;for(let j=m+1;j<B.d.stops.length;j++)if(D.has(B.d.stops[j].name)){n2=j;break}
+          if(n2<0)return;
+          const t1=wyRide(A.d,i,t),t2=wyRide(B.d,m,n2),tw=walk/1.2;
+          add({legs:[{...A,from:i,to:t,sec:t1},{...B,from:m,to:n2,sec:t2}],walks:[{m:Math.round(walk),sec:tw}],total:t1+t2+tw+60,xfer:1});
+        });
+      }
+    }
+  });
+  W.res=[...best.values()].sort((a,b)=>a.total-b.total).slice(0,40);
+  W.tab='all';W.at=Date.now();wyDraw();
+}
+/* ── 실시간 도착: 이 노선을 달리는 버스가 승차 정류장까지 ── */
+function wyArr(leg){
+  const out=[];
+  busesOn(leg.r,leg.k).forEach(b=>{
+    const p=b.pos,at=p.current!=null?p.current:(p.next!=null?p.next-1:null);
+    if(at==null)return;
+    const away=leg.from-at;if(away<0)return;
+    let m=null;
+    const row=(b.L.stops||[]).find(s=>s.name===leg.d.stops[leg.from].name&&s.eta_min!=null);
+    if(row)m=row.eta_min;else m=Math.round(wyRide(leg.d,Math.max(0,at),leg.from)/60);
+    if(away===0&&b.L.journey&&b.L.journey.status==='at_stop')m=0;
+    out.push({no:leg.r.no,m,away,key:b.key});
+  });
+  return out.sort((a,b)=>a.away-b.away).slice(0,2);
+}
+const wyClock=t=>new Date(t).toLocaleTimeString('ko-KR',{hour:'numeric',minute:'2-digit'});
+const wyMin=s=>Math.max(1,Math.round(s/60));
+function wyPlan(c){
+  /* 시간표: 출발(지금) → 첫 버스 대기(실시간 도착을 알면) → 탑승 → (환승 도보 → 다음 버스) → 도착 */
+  const now=Date.now(),a0=wyArr(c.legs[0]),wait0=a0.length&&a0[0].m!=null?a0[0].m*60:0;
+  let t=now+wait0*1000;const steps=[];
+  c.legs.forEach((l,i)=>{
+    const st=t;t+=l.sec*1000;steps.push({l,st,en:t});
+    if(c.walks[i]){t+=(c.walks[i].sec+60)*1000}
+  });
+  return {now,wait0,arrive:t,steps,arr0:a0};
+}
+function wyFiltered(){
+  let r=W.res.filter(c=>W.tab==='all'||(W.tab==='direct'?c.xfer===0:c.xfer>0));
+  const key=W.sort==='time'?(c=>c.total):W.sort==='xfer'?(c=>c.xfer*1e6+c.total):(c=>c.total+c.xfer*300);
+  return r.slice().sort((a,b)=>key(a)-key(b));
+}
+function wyDrawTabs(){
+  const n0=W.res.length,n1=W.res.filter(c=>!c.xfer).length,n2=n0-n1;
+  $('#wyTabs').innerHTML=n0?[['all','전체',n0],['direct','바로 가기',n1],['xfer','환승',n2]].map(([k,l,n])=>`<button class="${W.tab===k?'on':''}" ${n?'':'disabled'} onclick="W.tab='${k}';wyDraw()">${l} ${n}</button>`).join(''):'';
+  $('#wyOpt').style.display=n0?'flex':'none';
+  $('#wyNow').innerHTML=`오늘 <b>${esc(wyClock(Date.now()))}</b> 출발`;
+}
+function wyBar(c,plan){
+  const segs=[];
+  if(plan.wait0>0)segs.push({t:'walk',sec:plan.wait0,lbl:wyMin(plan.wait0)+'분'});
+  c.legs.forEach((l,i)=>{segs.push({t:'bus',sec:l.sec,lbl:wyMin(l.sec)+'분',col:routeColor(l.r)});if(c.walks[i])segs.push({t:'walk',sec:c.walks[i].sec+60,lbl:wyMin(c.walks[i].sec+60)+'분'})});
+  const tot=segs.reduce((a,s)=>a+s.sec,0)||1;
+  return `<div class="wbar">${segs.map(s=>`<div class="wseg w${s.t}" style="flex:${(s.sec/tot).toFixed(3)} 1 0;${s.t==='bus'?'background:'+s.col:''}">${esc(s.lbl)}</div>`).join('')}</div>`;
+}
+const BUS_IC='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 3h12a2 2 0 0 1 2 2v10a2 2 0 0 1-1 1.7V19a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1v-1H8v1a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-2.3A2 2 0 0 1 4 15V5a2 2 0 0 1 2-2zm0 3v5h12V6H6zm1.5 7.5a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4zm9 0a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4z"/></svg>';
+function wyArrHtml(arr,leg){
+  if(!arr.length)return `<div class="wa wa-none">${BUS_IC.replace('<svg','<svg style="width:13px;height:13px"')} ${esc(leg.r.no)} 도착 정보 없음</div>`;
+  return arr.map(a=>`<div class="wa"><span class="wa-no" style="color:${routeColor(leg.r)}">${esc(a.no)}</span><span class="wa-m">${a.m<=0?'곧 도착':a.m+'분'}</span><span class="wa-s">${a.away?a.away+'정류장':'도착'}</span></div>`).join('');
+}
+function wyDraw(){
+  wyDrawTabs();
+  if(!W.res.length){
+    if(W.o&&W.d&&W.at)$('#wyList').innerHTML='<div class="wy-empty">이 두 정류장을 잇는 버스 경로를 찾지 못했습니다.<br>(바로 가는 버스와 1번 갈아타는 경로까지 찾습니다)</div>';
+    return;
+  }
+  const L=wyFiltered();
+  const fastest=Math.min(...W.res.map(c=>c.total));
+  W.view=L;
+  $('#wyList').innerHTML=L.map((c,i)=>{
+    const p=wyPlan(c);
+    const tag=i===0&&W.sort==='best'?'최적':c.total===fastest?'최소시간':(c.xfer===0?'바로 가기':'');
+    const rows=c.legs.map((l,j)=>{
+      const arr=j===0?p.arr0:wyArr(l);
+      return `<div class="wl"><div class="wl-k" style="color:${routeColor(l.r)}">${BUS_IC}${esc(l.r.no)}</div>
+        <div class="wl-v"><b>${esc(l.d.stops[l.from].display)}</b>${wyArrHtml(arr,l)}</div></div>`
+        +(c.walks[j]?`<div class="wl"><div class="wl-k off">환승</div><div class="wl-v"><b>${esc(c.legs[j+1].d.stops[c.legs[j+1].from].display)}</b>${c.walks[j].m?`<span class="wa wa-s">도보 ${c.walks[j].m}m</span>`:''}</div></div>`:'');
+    }).join('');
+    const lst=c.legs[c.legs.length-1];
+    return `<div class="wr ${W.sel===c?'on':''}" onclick="wySel(${i})">
+      ${tag?`<div class="wr-tag">${tag}</div>`:''}
+      <div class="wr-h"><b>${wyMin((p.arrive-p.now)/1000)}<small>분</small></b><i></i><span>${esc(wyClock(p.arrive))} 도착</span><i></i><span>환승 ${c.xfer}회</span></div>
+      ${wyBar(c,p)}
+      ${rows}
+      <div class="wl"><div class="wl-k off">○ 하차</div><div class="wl-v"><b>${esc(lst.d.stops[lst.to].display)}</b></div></div>
+      <div class="wr-more">상세보기 ›</div></div>`;
+  }).join('')||'<div class="wy-empty">이 조건에 맞는 경로가 없습니다.</div>';
+  if(W.sel&&$('#wyR').classList.contains('on'))wyDetail();
+}
+/* 왼쪽 결과를 눌러야만 오른쪽 상세 창이 열림 */
+function wySel(i){const c=(W.view||[])[i];if(!c)return;W.sel=c;W.open={};wyDetail();wyDraw();$('#wyR').classList.add('on');if(innerWidth<900)$('#wyR').scrollTop=0}
+function wyCloseD(){W.sel=null;$('#wyR').classList.remove('on');wyDraw()}
+function wyDetail(){
+  const c=W.sel;if(!c)return;
+  const p=wyPlan(c),o=W.o,d=W.d;
+  let tl=`<div class="wt first"><div class="wt-t">${esc(wyClock(p.now))}</div><div class="wt-m wdash"><div class="wpin ws"><span>출발</span></div></div><div class="wt-c"><b>${esc(o.name)}</b><small>${esc(o.region)}</small></div></div>`;
+  p.steps.forEach((s,j)=>{
+    const l=s.l,rc=routeColor(l.r),arr=j===0?p.arr0:wyArr(l),mid=l.d.stops.slice(l.from+1,l.to),k='m'+j;
+    const ends=`${l.d.stops[0].display} ↔ ${l.d.stops[l.d.stops.length-1].display}`;
+    tl+=`<div class="wt" style="--lc:${rc}"><div class="wt-t">${esc(wyClock(s.st))}</div><div class="wt-m"><div class="wring"></div></div>
+      <div class="wt-c"><b>${esc(l.d.stops[l.from].display)} 승차</b><small>${esc(l.d.stops[l.from].name)}</small>
+        <div class="wbox">${arr.length?arr.map(a=>`<div class="wln"><span class="wno" style="background:${rc}">${esc(a.no)} ›</span><span class="wm">${a.m<=0?'곧 도착':a.m+'분'}</span> ${a.away?a.away+'정류장':'도착'}<span class="wdd">(${esc(l.r.no)}번 ${esc(ends)})</span></div>`).join('')
+          :`<div class="wln"><span class="wno" style="background:${rc}">${esc(l.r.no)}</span> 지금 오는 버스 정보 없음<span class="wdd">(${esc(ends)})</span></div>`}
+          <button class="wmore" onclick="wyRoute(${j})">버스 도착정보 더보기 ›</button></div>
+        <div class="wmv" onclick="W.open['${k}']=!W.open['${k}'];wyDetail()">${l.to-l.from}개 정류장 이동 · 약 ${wyMin(l.sec)}분 ${W.open[k]?'⌃':'⌄'}</div>
+        ${W.open[k]&&mid.length?`<div class="wmv-l">${mid.map(x=>'· '+esc(x.display)).join('<br>')}</div>`:''}
+      </div></div>
+      <div class="wt" style="--lc:${rc}"><div class="wt-t" style="align-self:center">${BUS_IC.replace('<svg','<svg style="width:15px;height:15px;color:'+rc+'"')}<br>${wyMin(l.sec)}분</div><div class="wt-m" style="min-height:0"></div><div></div></div>`;
+    const w=c.walks[j],last=j===p.steps.length-1;
+    tl+=`<div class="wt" style="--lc:${rc}"><div class="wt-t">${esc(wyClock(s.en))}</div><div class="wt-m ${last||w?'wdash':''}" style="--lc:${rc}"><div class="wring"></div></div>
+      <div class="wt-c"><b>${esc(l.d.stops[l.to].display)} 하차</b><small>${esc(l.d.stops[l.to].name)}</small>
+      ${w?`<div class="wmv">${w.m?'도보 '+w.m+'m · ':''}환승 약 ${wyMin(w.sec+60)}분</div>`:''}</div></div>`;
+  });
+  tl+=`<div class="wt last"><div class="wt-t">${esc(wyClock(p.arrive))}</div><div class="wt-m wdash"><div class="wpin we"><span>도착</span></div></div><div class="wt-c"><b>${esc(d.name)}</b><small>${esc(d.region)}</small></div></div>`;
+  $('#wyR').innerHTML=`<div class="wd-h"><button class="wd-x" onclick="wyCloseD()" aria-label="닫기">✕</button>
+      <div class="wr-tag">${c.xfer?'환승 1회':'바로 가기'}</div>
+      <div class="wr-h"><b>${wyMin((p.arrive-p.now)/1000)}<small>분</small></b><i></i><span>${esc(wyClock(p.arrive))} 도착</span></div>
+      <div class="wd-sub">환승 ${c.xfer}회${c.walks.length&&c.walks[0].m?` · 도보 ${c.walks[0].m}m`:''}${p.wait0?` · 대기 ${wyMin(p.wait0)}분`:''}</div>
+      ${wyBar(c,p)}</div>
+    <div class="wtl">${tl}</div>`;
+}
+function wyRoute(j){const l=W.sel&&W.sel.legs[j];if(l)openRouteVia(W.o.gi,l.ri,l.k,'s-way')}
+/* 길찾기·지도에서 노선도를 열 때: 뒤로 가면 그 화면으로 돌아오게 */
+function openRouteVia(gi,ri,k,via){
+  if(!DATA[gi]||!DATA[gi].routes[ri])return;
+  st.live=false;st.rg=gi;$('#rgName').textContent=DATA[gi].name;
+  st.rt=DATA[gi].routes[ri];
+  stack.length=0;stack.push('s-region');if(via)stack.push(via);
+  pickDir(Math.min(k||0,st.rt.dirs.length-1));
+}
 
 const REMOTE_MS=3000;    // 인터넷에서 열 때의 갱신 주기 (멀티플레이 위치가 3초마다 갱신)
 let pollMs=REMOTE?REMOTE_MS:1000,fails=0;
